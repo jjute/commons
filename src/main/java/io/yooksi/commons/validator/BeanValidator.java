@@ -60,18 +60,16 @@ public final class BeanValidator {
     }
 
     /**
-     * <p>Create, initialize and <b>validate</b> a new instance of a mod item.</p>
-     * A mod item is only recognized if it extends it's parent base class.
+     * <p>Create, initialize and <b>validate</b> a new instance of a child class.</p>
+     * A child class is only recognized as valid if it extends it's parent base class.
      *
-     * @param parentClass mod item's parent class
-     * @param itemClass mod item's main class
      * @param params constructor initialization parameters
-     * @return newly constructed and validated item instance
-     * @throws IllegalArgumentException when no item constructor with the
-     * supplied parameters could be found
+     * @return newly constructed and validated object instance
+     * @throws IllegalArgumentException when no child or parent constructor
+     * with the supplied parameters could be found
      */
     @SuppressWarnings("unchecked")
-    public static <T> T constructItem(Class<? super T> parentClass, Class<T> itemClass, Object...params) {
+    public static <T> T constructChild(Class<? super T> parentClass, Class<T> childClass, Object...params) {
 
         /* Bean constraint validation doesn't seem to process parent constructors
          * so we have to manually validate their parameters first
@@ -79,7 +77,7 @@ public final class BeanValidator {
         Constructor<T> constructor = getConstructor(parentClass, params);
         java.util.Set<ConstraintViolation<T>> parentViolations = validateConstructorParams(constructor, params);
 
-        constructor = getConstructor(itemClass, params);
+        constructor = getConstructor(childClass, params);
         java.util.Set<ConstraintViolation<T>> childViolations = validateConstructorParams(constructor, params);
 
         /* In case both child and parent constructor produced constraint violations
