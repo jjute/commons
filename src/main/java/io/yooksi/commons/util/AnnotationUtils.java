@@ -1,6 +1,7 @@
 package io.yooksi.commons.util;
 
 import io.yooksi.commons.define.MethodsNotNull;
+import org.jetbrains.annotations.Contract;
 
 import javax.validation.constraints.NotEmpty;
 import java.lang.annotation.Annotation;
@@ -78,6 +79,13 @@ public class AnnotationUtils {
         }
     }
 
+    /**
+     * @return {@code true} only if the IntelliJ Contract annotation instance
+     * passed as a method parameter guarantees operation immutability <i>(pure = true)</i>
+     */
+    @Contract(pure = true)
+    public static boolean isMethodContractPure(Contract contract) {
+        return getAttributeValue(contract, "pure", boolean.class);
     }
 
     /**

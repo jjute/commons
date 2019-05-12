@@ -7,7 +7,9 @@ import io.yooksi.commons.util.AnnotationUtils;
 import io.yooksi.commons.util.StringUtils;
 
 import javafx.util.Pair;
+import org.aopalliance.intercept.MethodInvocation;
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.Contract;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -17,6 +19,7 @@ import javax.validation.executable.ExecutableValidator;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +60,53 @@ public final class BeanValidator {
             processViolation(violation);
         }
         return object;
+    }
+
+    /**
+     * <p>Validate method parameters with Java Bean validation.</p>
+     * Usually called from a method interception system.
+     *
+     * @param method the method for which the parameter constraints is validated
+     * @param object the object on which the method to validate is invoked
+     * @param params  the values provided by the caller for the given method's parameters
+     * @param <T> the type hosting the method to validate
+     */
+    @Contract(pure = true)
+    public static <T> void validateMethod(Method method, T object, Object...params) {
+
+        for (ConstraintViolation violation : exeValidator.validateParameters(object, method, params)) {
+            processViolation(violation);
+        }
+    }
+
+    /**
+     * Called from a method interception system to validate method parameters,
+     * return value and the state of the class instance after it's invocation.
+     *
+     * @param mi method joinpoint given to an interceptor upon method-call
+     * @return method invocation return value
+     * @throws Throwable if the joinpoint throws an exception
+     */
+    public static Object validateMethod(MethodInvocation mi) throws Throwable {
+
+        validateMethod(mi.getMethod(), mi.getThis(), mi.getArguments());
+        /*
+         * After the method parameters have been validated let the method
+         * execute it's operations and get the return value
+         */
+        Object result = mi.proceed();
+        /*
+         * Now validate the class instance that holds the method to see if
+         * all fields are still complying with annotation constraints.
+         * However do this only if the method is not explicitly annotated
+         * with a contract that gurantees operation immutability.
+         */
+        Contract contract = mi.getMethod().getDeclaredAnnotation(Contract.class);
+        if (contract == null || !AnnotationUtils.isMethodContractPure(contract)) {
+            validate(mi.getThis());
+        }
+        // TODO: Validate return value here as well
+        return result;
     }
 
     /**
