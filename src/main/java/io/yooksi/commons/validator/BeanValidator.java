@@ -99,6 +99,30 @@ public final class BeanValidator {
     }
 
     /**
+     * Find the constructor object for a declared class constructor with the specified parameter list.
+     * The order of parameters in the argument array has to match the constructor parameter order.
+     *
+     * @param clazz Class to get the declared constructor from
+     * @param params list of constructor parameters
+     */
+    public static <T> Constructor getConstructor(Class<T> clazz, Object...params) {
+
+        Class[] paramClasses = new Class[params.length];
+        for (int i = 0; i < params.length; i++) {
+            paramClasses[i] = params[i].getClass();
+        }
+        try {
+            /* Use #getDeclaredConstructor method to get our constructor
+             * instead of #getConstructor in case the constructor is not visible
+             */
+            return clazz.getDeclaredConstructor(paramClasses);
+        }
+        catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    /**
      * This is a helper method to create, initialize and <b>validate</b> a new instance of the
      * constructor's declaring class, with the specified initialization parameters.
      *
@@ -149,30 +173,6 @@ public final class BeanValidator {
         CommonLogger.get().printf(level, message);
         CommonLogger.get().debug(message, new Exception(String.format("Field '%s' with value '%s' has violated " +
                 "annotation constrains of %s", field, value, annotation.annotationType().getName())));
-    }
-
-    /**
-     * Find the constructor object for a declared class constructor with the specified parameter list.
-     * The order of parameters in the argument array has to match the constructor parameter order.
-     *
-     * @param clazz Class to get the declared constructor from
-     * @param params list of constructor parameters
-     */
-    private static <T> Constructor getConstructor(Class<T> clazz, Object...params) {
-
-        Class[] paramClasses = new Class[params.length];
-        for (int i = 0; i < params.length; i++) {
-            paramClasses[i] = params[i].getClass();
-        }
-        try {
-            /* Use #getDeclaredConstructor method to get our constructor
-             * instead of #getConstructor in case the constructor is not visible
-             */
-            return clazz.getDeclaredConstructor(paramClasses);
-        }
-        catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException(e);
-        }
     }
 
     private static <T> java.util.Set<ConstraintViolation<T>> validateConstructorParams(Constructor<T> c, Object...p) {
