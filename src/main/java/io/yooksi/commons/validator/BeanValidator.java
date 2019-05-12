@@ -8,7 +8,6 @@ import io.yooksi.commons.util.StringUtils;
 
 import javafx.util.Pair;
 import org.apache.logging.log4j.Level;
-import org.jetbrains.annotations.TestOnly;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -127,12 +126,11 @@ public final class BeanValidator {
         Object value = violation.getInvalidValue();
         Object field = violation.getPropertyPath();
         String message = violation.getMessage();
-        Level level = Level.ERROR;
 
         Annotation annotation = violation.getConstraintDescriptor().getAnnotation();
         java.util.Map<String, Object> attributes = AnnotationUtils.getAttributes(annotation);
         String sLevel = AnnotationUtils.getAttributeValue(annotation, "level", String.class);
-        level = Level.toLevel(sLevel, Level.ERROR);
+        Level level = Level.toLevel(sLevel, Level.ERROR);
 
         /* Parse our annotation violation message and replace all words marked with the regex key
          * with an annotation attribute value that holds the same name.

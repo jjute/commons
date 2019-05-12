@@ -2,9 +2,6 @@ package io.yooksi.commons.logger;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Contract;
-
-import javax.annotation.Nonnull;
 
 public abstract class ICommonLogger {
 

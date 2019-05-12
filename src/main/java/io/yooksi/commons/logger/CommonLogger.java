@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 @MethodsNotNull
 public class CommonLogger extends ICommonLogger {
 
-    private static CommonLogger instance = new CommonLogger();
+    private static final CommonLogger instance = new CommonLogger();
     private Logger logger = LogManager.getLogger(ICommonLogger.class);
 
     public Logger setLogger(String name) {

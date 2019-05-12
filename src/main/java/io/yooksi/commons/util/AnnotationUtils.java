@@ -63,8 +63,7 @@ public class AnnotationUtils {
     @SuppressWarnings("unchecked")
     public static <T> T getAttributeValue(Annotation annotation, String attribute, Class<T> clazz) {
 
-        javafx.util.Pair<Method, Object> data = getAttribute(annotation, attribute);
-        Object value = data != null ? data.getValue() : null;
+        Object value = getAttribute(annotation, attribute).getValue();
         if (!clazz.isInstance(value)) {
             throw new IllegalStateException(String.format("Expected to find attribute %s(%s) in annotation %s",
                     attribute, clazz.getSimpleName(), annotation.getClass().getSimpleName()));

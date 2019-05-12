@@ -6,7 +6,6 @@ package commons;
 import io.yooksi.commons.define.PositiveRange;
 import io.yooksi.commons.validator.BeanValidator;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 public class LibraryTest {
 
