@@ -1,22 +1,43 @@
 package io.yooksi.commons.aop;
 
+import io.yooksi.commons.define.MethodsNotNull;
 import io.yooksi.commons.logger.CommonLogger;
 import io.yooksi.commons.validator.BeanValidator;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.springframework.aop.framework.ProxyFactory;
 
+import java.lang.reflect.Method;
+
+
+/**
+ * This classes handles proxy based frameworks such as Spring AOP,
+ * to intercept methods and either validate values such as method
+ * parameters or manipulate method execution and outcome.
+ */
+@MethodsNotNull
+@SuppressWarnings({"unused", "unchecked"})
 public class AOPProxy {
 
-    // TODO: Document this method
+    /**
+     * <p>Create a Spring AOP proxy that works for all interfaces that the given target implements.</p>
+     * <p>The proxy will intercepts any method calls on an interface on its way to the target, validate
+     * the method parameters and return value as well as the state of the object it belongs to.</p>
+     * If the object doesn't implement any interfaces the proxy will intercept all class methods.
+     *
+     * @param T target object to create proxy for
+     */
     public static <T> T createFor(Object T) {
 
+        CommonLogger.getLogger().debug("Creating new AOP proxy for object %s", T);
         ProxyFactory pf = new ProxyFactory(T);
         pf.addAdvice((MethodInterceptor) mi -> {
 
-            CommonLogger.getLogger().debug("Method was intercepted!");
-            CommonLogger.getLogger().debug("Invocation target : " + mi.getThis());
-            CommonLogger.getLogger().debug("Method name : " + mi.getMethod().getName());
-            CommonLogger.getLogger().debug("Method arguments : " + java.util.Arrays.toString(mi.getArguments()));
+            Method method = mi.getMethod();         /* the method being intercepted */
+            Object[] params = mi.getArguments();    /* list of method arguments     */
+            Object target = mi.getThis();           /* target object being proxied  */
+
+            CommonLogger.getLogger().debug("Method %s (args: %s) was intercepted while on it's " +
+                    "way to target %s", method.getName(), java.util.Arrays.toString(params), target);
 
             return BeanValidator.validateMethod(mi);
         });
