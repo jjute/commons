@@ -1,11 +1,14 @@
 package io.yooksi.commons.logger;
 
+import io.yooksi.commons.define.MethodsNotNull;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+@MethodsNotNull
 public abstract class ICommonLogger {
 
-    Logger logger = LogManager.getLogger(ICommonLogger.class);
+    Logger logger = LogManager.getLogger();
 
     abstract void info(String log);
 
@@ -22,4 +25,6 @@ public abstract class ICommonLogger {
     abstract void debug(String format, Object...args);
 
     abstract void debug(String log, Throwable e);
+
+    abstract void printf(Level level, String format, Object... params);
 }

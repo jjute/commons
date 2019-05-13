@@ -220,8 +220,8 @@ public final class BeanValidator {
         /* Print the violation message to console with the appropriate level.
          * Also print an exception stack trace as a debug log
          */
-        CommonLogger.get().printf(level, message);
-        CommonLogger.get().debug(message, new Exception(String.format("Field '%s' with value '%s' has violated " +
+        CommonLogger.getDefault().printf(level, message);
+        CommonLogger.getDefault().debug(message, new Exception(String.format("Field '%s' with value '%s' has violated " +
                 "annotation constrains of %s", field, value, annotation.annotationType().getName())));
     }
 
