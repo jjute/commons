@@ -5,16 +5,21 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.validation.constraints.NotEmpty;
+
 @MethodsNotNull
 public class CommonLogger extends ICommonLogger {
 
-    private static Logger instance = LogManager.getLogger();
+    // TODO: Document this map and what exactly it STORES
+    private static java.util.Map<Thread, ICommonLogger> map = new java.util.HashMap<>();
+    private static CommonLogger defaultInstance = new CommonLogger();
 
-    public static <T extends  CommonLogger> T create(String loggerName, Class<T> implClass) {
+    public static <T extends  CommonLogger> T create(@NotEmpty String loggerName, Class<T> implClass) {
 
         try {
             T impl = implClass.newInstance();
             impl.logger = LogManager.getLogger(loggerName);
+            map.put(Thread.currentThread(), impl);
             return impl;
         }
         catch (InstantiationException | IllegalAccessException e) {
@@ -24,8 +29,10 @@ public class CommonLogger extends ICommonLogger {
     public final Logger get() {
         return logger;
     }
-    public static Logger getDefault() {
-        return instance;
+    // TODO: Document this method and what exactly it DOES
+    public static ICommonLogger getLogger() {
+        Object object = map.get(Thread.currentThread());
+        return object != null ? ((ICommonLogger)object) : defaultInstance;
     }
 
     /*
