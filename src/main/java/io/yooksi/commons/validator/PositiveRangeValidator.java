@@ -18,6 +18,6 @@ public class PositiveRangeValidator implements ConstraintValidator<PositiveRange
     public boolean isValid(Number value, ConstraintValidatorContext ctx) {
 
         double number = value != null ? value.doubleValue() : 0;
-        return value != null && number > 0 && number < constraint.max();
+        return value != null && number >= 0 && number <= constraint.max();
     }
 }
