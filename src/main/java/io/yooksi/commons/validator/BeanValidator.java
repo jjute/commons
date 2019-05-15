@@ -8,6 +8,7 @@ import io.yooksi.commons.util.StringUtils;
 
 import javafx.util.Pair;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Contract;
 
@@ -161,15 +162,16 @@ public final class BeanValidator {
         for (int i = 0; i < params.length; i++) {
             paramClasses[i] = params[i].getClass();
         }
-        try {
-            /* Use #getDeclaredConstructor method to get our constructor
-             * instead of #getConstructor in case the constructor is not visible
-             */
-            return clazz.getDeclaredConstructor(paramClasses);
+        /* Use Apache method of finding an accessible constructor as it
+         * is a more flexible search than the normal exact matching algorithm.
+         */
+        Constructor c = ConstructorUtils.getMatchingAccessibleConstructor(clazz, paramClasses);
+        if (c == null) {
+            String sParams = java.util.Arrays.toString(params);
+            String log = String.format("Unable to find constructor for class %s with parameters %s", clazz, sParams);
+            throw new IllegalArgumentException(new NoSuchMethodException(log));
         }
-        catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException(e);
-        }
+        else return c;
     }
 
     /**
