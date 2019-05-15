@@ -24,20 +24,20 @@ public class AOPProxy {
      * the method parameters and return value as well as the state of the object it belongs to.</p>
      * If the object doesn't implement any interfaces the proxy will intercept all class methods.
      *
-     * @param T target object to create proxy for
+     * @param target object to create proxy for
      */
-    public static <T> T createFor(Object T) {
+    public static <T> T createFor(T target) {
 
-        CommonLogger.get().debug("Creating new AOP proxy for object %s", T);
-        ProxyFactory pf = new ProxyFactory(T);
+        CommonLogger.get().debug("Creating new AOP proxy for object %s", target);
+        ProxyFactory pf = new ProxyFactory(target);
         pf.addAdvice((MethodInterceptor) mi -> {
 
             Method method = mi.getMethod();         /* the method being intercepted */
             Object[] params = mi.getArguments();    /* list of method arguments     */
-            Object target = mi.getThis();           /* target object being proxied  */
+            Object targetObj = mi.getThis();           /* target object being proxied  */
 
             CommonLogger.get().debug("Method %s (args: %s) was intercepted while on it's " +
-                    "way to target %s", method.getName(), java.util.Arrays.toString(params), target);
+                    "way to target %s", method.getName(), java.util.Arrays.toString(params), targetObj);
 
             return BeanValidator.validateMethod(mi);
         });
