@@ -14,7 +14,7 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class CommonLogger extends AbsCommonLogger {
 
-    private static final Logger INTER_LOGGER = LogManager.getLogger("ykcommons-internal");
+    private static final Logger INTER_LOGGER = LogManager.getLogger("ykcommons-inter");
 
     public final LoggerContext context;
     private final LoggerConfig loggerConfig;
