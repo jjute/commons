@@ -83,12 +83,12 @@ public class LoggerTest {
         if (level.equals(Level.OFF) || logFileLevel.equals(Level.OFF))
         {
             logger.printf(Level.INFO, "TRTLF: Printing INFO to logfile with CommonLogger at level %s", level);
-            logger.startLoggingToFile(logFileLevel);
+            logger.setLogFileLevel(logFileLevel);
             logger.printf(Level.INFO, "TRTLF: Printing INFO to logfile with CommonLogger at level %s", level);
         }
         else {
             logger.printf(logFileLevel, "TRTLF: Printing %s to logfile with CommonLogger at level %s", logFileLevel.name(), level);
-            logger.startLoggingToFile(logFileLevel);
+            logger.setLogFileLevel(logFileLevel);
             logger.printf(logFileLevel, "TRTLF: Printing %s to logfile with CommonLogger at level %s", logFileLevel.name(), level);
         }
         return logger.getLogFile();
