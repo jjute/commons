@@ -170,11 +170,10 @@ public class CommonLogger extends AbsCommonLogger {
         }
     }
 
-    public void startLoggingToFile(Level level) {
+    public void setLogFileLevel(Level level) {
 
-        Log4jUtils.updateAppender(this, logFileAppender, level);
         logFileLevel = level;
-
+        Log4jUtils.updateAppender(this, logFileAppender, level);
         //debug("%s started logging to file with level %s", logger.getName(), level);
     }
     public void startLoggingToFile() {
@@ -185,9 +184,7 @@ public class CommonLogger extends AbsCommonLogger {
 
     public void stopLoggingToFile() {
 
-        loggerConfig.removeAppender(logFileAppender.getName());
-        //context.updateLoggers();
-
+        Log4jUtils.updateAppender(this, logFileAppender, Level.OFF);
         //debug("%s stopped logging to file with level %s", logger.getName(), logFileLevel);
     }
 
