@@ -75,7 +75,7 @@ public class CommonLogger extends AbsCommonLogger {
          * This property is assigned in Log4jUtils#createNewFileAppender
          */
         Property property = Log4jUtils.getAppenderProperty(fileAppender, "level");
-        if (property != null && property.getValue().equals(logFileLevel.name()))
+        if (property != null && !property.getValue().equals(logFileLevel.name()))
         {
             fileAppender = Log4jUtils.createNewFileAppender(this, consoleAppender.getLayout(), logFilePath);
             Log4jUtils.updateAppender(this, fileAppender, logFileLevel);
