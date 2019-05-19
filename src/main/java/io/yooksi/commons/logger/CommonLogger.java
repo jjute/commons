@@ -9,61 +9,99 @@ import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.config.Property;
 
 @MethodsNotNull
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class CommonLogger extends AbsCommonLogger {
 
+    /** Used for internal class logging, particularly by the class constructor */
     private static final Logger INTER_LOGGER = LogManager.getLogger("ykcommons-inter");
 
     public final LoggerContext context;
-    private final LoggerConfig loggerConfig;
-    private final FileAppender fileAppender;
+    final LoggerConfig loggerConfig;
+    final FileAppender logFileAppender;
 
-    private final Logger logger;
-    private final Level logLevel;
-    private Level logFileLevel;
+    final String name; final Logger logger;
+    final Level logLevel; Level logFileLevel;
 
+    /**
+     * <p>Construct a new instance of this custom Log4j wrapper.</p>
+     * <ul>
+     *     <li>The construction process will be logged by an internal logger.</li>
+     *     at a debug level to console exclusively.
+     *     <li>If either the console or file appender are missing from the
+     *     configuration file in the current context it will be created
+     *     with default configurations.</li>
+     *     <li>When creating a logger with the same name as an existing one
+     *     but different console or file log levels the existing logger will
+     *     be used and the appropriate appenders will be updated.</li>
+     * </ul>
+     *
+     * @param logger name of the {@code Log4j} logger to create or use
+     * @param logLevel console logging level
+     * @param logFileLevel logfile logging level
+     */
     public CommonLogger(String logger, Level logLevel, Level logFileLevel) {
 
         INTER_LOGGER.printf(Level.DEBUG, "Initializing new CommonLogger %s " +
                 "with level " + "%s(log), %s(file)", logger, logLevel, logFileLevel);
 
+        this.name = logger;
         this.logLevel = logLevel;
         this.logFileLevel = logFileLevel;
 
         context = (LoggerContext) LogManager.getContext(false);
-        Configuration config = context.getConfiguration();
+        final Configuration config = context.getConfiguration();
+        final String logFilePath = "logs/" + logger + ".log";
 
         INTER_LOGGER.printf(Level.DEBUG, "Using %s Configuration", config.getName());
 
-        boolean existsLogger = config.getLoggers().containsKey(logger);
-        INTER_LOGGER.printf(Level.DEBUG, existsLogger ? "Getting logger %s from current context"
-                : "Unable to find logger %s in current context, creating new one with default configs", logger);
-        /*
-         * If no existing logger configuration was found for the parameter name
-         * then the root logger configuration will be used instead
-         */
-        this.logger = LogManager.getLogger(logger);
-        loggerConfig = context.getConfiguration().getLoggerConfig(this.logger.getName());
+        loggerConfig = Log4jUtils.getOrCreateLoggerConfig(this);
 
         ConsoleAppender consoleAppender = Log4jUtils.getOrInitConsoleAppender(this);
-        fileAppender = Log4jUtils.getOrInitFileAppender(this, consoleAppender.getLayout(), "logs/" + logger);
+        FileAppender fileAppender = Log4jUtils.getOrInitFileAppender(this, consoleAppender.getLayout(), logFilePath);
+        /*
+         * Update appenders in case we are creating a CommonLogger with
+         * an already existing logger name but different logger levels.
+         * Read Log4jUtils#updateAppender method for more information.
+         */
+        if (!loggerConfig.getLevel().equals(logLevel)) {
+            Log4jUtils.updateAppender(this, consoleAppender, logLevel);
+        }
+        /* There is no other way to get FileAppender level but to
+         * store and retrieve that information via property arrays.
+         * This property is assigned in Log4jUtils#createNewFileAppender
+         */
+        Property[] properties = fileAppender.getPropertyArray();
+        if (properties != null && properties.length > 0 && properties[0].getName().equals("level")) {
+            if (!properties[0].getValue().equals(logFileLevel.name()))
+            {
+                fileAppender = Log4jUtils.createNewFileAppender(this, consoleAppender.getLayout(), logFilePath);
+                Log4jUtils.updateAppender(this, fileAppender, logFileLevel);
+            }
+        }
+
+        this.logFileAppender = fileAppender;
+        this.logger = LogManager.getLogger(logger);
 
         loggerConfig.setAdditive(false);
         loggerConfig.setLevel(logLevel);
+
         /*
          * This causes all Loggers to re-fetch information from their LoggerConfig.
          * We have to call this if we want to see our changes take place
          */
         context.updateLoggers();
-        /*
-         * Currently used only by tests but is useful to all users
-         * TODO: implement a system that creates new log files on each
-         *  run and packs the ones from day before into a zipped archive
-         */
-        clearLogFile();
     }
+
+    /**
+     * Overload constructor for when we don't want to log to file,
+     * or when we want the file and console logging levels to be the same.
+     *
+     * @param logToFile should we enable or disable logging to file
+     * @see #CommonLogger(String, Level, Level)
+     */
     public CommonLogger(String logger, Level logLevel, boolean logToFile) {
         this(logger, logLevel, logToFile ? logLevel : Level.OFF);
     }
@@ -71,15 +109,21 @@ public class CommonLogger extends AbsCommonLogger {
     public org.apache.logging.log4j.core.Logger getCoreLogger() {
         return ((org.apache.logging.log4j.core.Logger)logger);
     }
+
+    /**
+     * @return Logger level assigned to this logger's ConsoleAppender.
+     */
     public Level getLogLevel() {
         return logLevel;
     }
-
     /**
      * @return Logger level assigned to this logger's FileAppender.
      */
     public Level getLogFileLevel() {
         return logFileLevel;
+    }
+    public String getName() {
+        return name;
     }
 
     /**
@@ -97,9 +141,8 @@ public class CommonLogger extends AbsCommonLogger {
     }
 
     /**
-     * Call this from an {@code AbsCommonLogger} implementation when you
-     * need access to more logging methods. Can also be called from
-     * utility methods when the logger instance is not exposed.
+     * Call this from an {@code AbsCommonLogger} implementation
+     * when you need access to more logging methods.
      *
      * @return an instance of {@code Log4j} logger created for this implementation
      * or the internal logger used as fallback when the logger is still initializing
@@ -109,11 +152,15 @@ public class CommonLogger extends AbsCommonLogger {
     }
 
     public java.io.File getLogFile() {
-        return new java.io.File(fileAppender.getFileName());
+        return new java.io.File(logFileAppender.getFileName());
     }
 
     public void clearLogFile() {
-
+        /*
+         * Currently used only by tests but is useful to all users
+         * TODO: implement a system that creates new log files on each
+         *  run and packs the ones from day before into a zipped archive
+         */
         try {
             java.io.PrintWriter writer = new java.io.PrintWriter(getLogFile());
             writer.print(""); writer.close();
@@ -125,25 +172,20 @@ public class CommonLogger extends AbsCommonLogger {
 
     public void startLoggingToFile(Level level) {
 
-        //loggerConfig.removeAppender(fileAppender.getName());
-        loggerConfig.addAppender(fileAppender, level, null);
-        //context.updateLoggers();
+        Log4jUtils.updateAppender(this, logFileAppender, level);
         logFileLevel = level;
 
         //debug("%s started logging to file with level %s", logger.getName(), level);
     }
     public void startLoggingToFile() {
 
-        //loggerConfig.removeAppender(fileAppender.getName());
-        loggerConfig.addAppender(fileAppender, logFileLevel, null);
-        //context.updateLoggers();
-
+        Log4jUtils.updateAppender(this, logFileAppender, logFileLevel);
         //debug("%s started logging to file with level %s", logger.getName(), logFileLevel);
     }
 
     public void stopLoggingToFile() {
 
-        loggerConfig.removeAppender(fileAppender.getName());
+        loggerConfig.removeAppender(logFileAppender.getName());
         //context.updateLoggers();
 
         //debug("%s stopped logging to file with level %s", logger.getName(), logFileLevel);
