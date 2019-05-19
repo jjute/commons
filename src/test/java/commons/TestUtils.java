@@ -7,7 +7,9 @@ import static org.junit.Assert.assertEquals;
 public class TestUtils {
 
     public static void assertTextFileLineCount(java.io.File file, int count) throws IOException {
-        assertEquals("Expected " + count + " console outputs", count, getTextFileLineCount(file));
+
+        long lineCount = getTextFileLineCount(file);
+        assertEquals("Expected " + count + " console outputs", count, lineCount);
     }
 
     public static long getTextFileLineCount(java.io.File file) throws IOException {
