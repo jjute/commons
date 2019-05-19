@@ -25,44 +25,93 @@ public final class Log4jUtils {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Create a new {@code ConsoleAppender} instance with default {@code PatternLayout}
+     * for the supplied {@code Configuration}.
+     */
     public static ConsoleAppender createNewConsoleAppender(CommonLogger logger, Configuration config) {
 
-        logger.getLogger().printf(Level.DEBUG, "Initializing new ConsoleAppender for logger %s", logger.name);
+        logger.getLogger().printf(Level.DEBUG, "Creating new ConsoleAppender for logger %s", logger.name);
 
         String pattern = PatternLayout.SIMPLE_CONVERSION_PATTERN;
         PatternLayout layout = PatternLayout.newBuilder().withPattern(pattern).withConfiguration(config).build();
         return ConsoleAppender.createDefaultAppenderForLayout(layout);
     }
 
+    /**
+     * Create a new {@code FileAppender} instance with the supplied {@code Layout}.
+     *
+     * @param consoleLayout logging format the appender will use
+     * @param logFilePath path to the logfile the appender will print to
+     */
     public static FileAppender createNewFileAppender(CommonLogger logger, Layout<? extends Serializable> consoleLayout, String logFilePath) {
 
-        logger.getLogger().printf(Level.DEBUG, "Initializing new FileAppender for logger %s", logger.name);
+        logger.getLogger().printf(Level.DEBUG, "Creating new FileAppender for logger %s", logger.name);
 
         Property[] properties = { Property.createProperty("level", logger.logFileLevel.name()) };
         return FileAppender.newBuilder().setName("LogFile").withFileName(logFilePath)
                 .setLayout(consoleLayout).setPropertyArray(properties).build();
     }
 
+    /**
+     * <p>Called from {@code CommonLogger} wrapper constructor.</p>
+     * It will always return a valid instance of {@code ConsoleAppender}.
+     *
+     * @param logger wrapper instance to get info from
+     * @return the existing appender instance from {@code LoggerConfig} or
+     * a newly created and initialized appender instance if none already exist.
+     */
     public static ConsoleAppender getOrInitConsoleAppender(CommonLogger logger) {
 
         ConsoleAppender consoleAppender = findAppender(ConsoleAppender.class, logger.loggerConfig);
-        return consoleAppender != null ? consoleAppender : initializeAppender(logger.loggerConfig,
+        return consoleAppender != null ? consoleAppender : initializeAppender(logger,
                 createNewConsoleAppender(logger, logger.context.getConfiguration()), logger.logLevel);
     }
 
+    /**
+     * <p>Called from {@code CommonLogger} wrapper constructor.</p>
+     * It will always return a valid instance of {@code FileAppender}.
+     *
+     * @param logger wrapper instance to get info from
+     * @param consoleLayout logging format the appender will use
+     * @param logFilePath path to the logfile the appender will print to
+     * @return the existing appender instance from {@code LoggerConfig} or
+     * a newly created and initialized appender instance if none already exist.
+     */
     public static FileAppender getOrInitFileAppender(CommonLogger logger, Layout<? extends Serializable> consoleLayout, String logFilePath) {
 
         FileAppender fileAppender = findAppender(FileAppender.class, logger.loggerConfig);
-        return fileAppender != null ? fileAppender : initializeAppender(logger.loggerConfig,
+        return fileAppender != null ? fileAppender : initializeAppender(logger,
                 createNewFileAppender(logger, consoleLayout, logFilePath), logger.logFileLevel);
     }
 
-    public static <T extends Appender> T initializeAppender(LoggerConfig loggerConfig, T appender, Level level) {
+    /**
+     * Add the appender to supplied {@code LoggerConfig} and activate it.
+     *
+     * @param logger wrapper instance to get {@code LoggerConfig} from
+     * @param level logging Level the appender will operate under
+     * @param <T> appender object type
+     * @return the activated appender instance
+     */
+    public static <T extends Appender> T initializeAppender(CommonLogger logger, T appender, Level level) {
 
-        loggerConfig.addAppender(appender, level, null);
+        String appenderClass = appender.getClass().getSimpleName();
+        logger.getLogger().printf(Level.DEBUG, "Initializing new %s for logger %s", appenderClass, logger.name);
+
+        logger.loggerConfig.addAppender(appender, level, null);
         appender.start(); return appender;
     }
 
+    /**
+     * Update logger appender by removing the existing appender
+     * and adding an updated version of the appender to the {@code LoggerConfig}.
+     *
+     * @param logger wrapper instance updating the appender
+     * @param appender instance of the appender we are updating
+     * @param level {@code log4j} level we want to update the appender to
+     * @param <T> appender class to search for in the {@code LoggerConfig}.
+     * If no such class type was found an error will be printed.
+     */
     public static <T extends Appender> void updateAppender(CommonLogger logger, T appender, Level level) {
 
         LoggerConfig loggerConfig = logger.loggerConfig;
@@ -118,6 +167,10 @@ public final class Log4jUtils {
         }
     }
 
+    /**
+     * @return  the first appender entry with the supplied {@code Class} found in
+     * {@code LoggerConfig} or {@code null} if no entry was found.
+     */
     @SuppressWarnings("unchecked")
     public static @Nullable <T extends Appender> T findAppender(Class<T> clazz, LoggerConfig config) {
 

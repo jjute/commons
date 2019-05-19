@@ -4,6 +4,7 @@ import io.yooksi.commons.define.MethodsNotNull;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.appender.FileAppender;
@@ -168,12 +169,34 @@ public class CommonLogger extends AbsCommonLogger {
         }
     }
 
+    /**
+     * Update the logger {@code FileAppender} level to match
+     * the method parameter level. If all you want is to start or stop
+     * logging to file you should use of these respective methods:
+     * <ul style="list-style-type:none">
+     *     <li>{@link #startLoggingToFile()}</li>
+     *     <li>{@link #stopLoggingToFile()}</li>
+     * </ul>
+     * @see Log4jUtils#updateAppender(CommonLogger, Appender, Level)
+     */
     public void setLogFileLevel(Level level) {
 
         logFileLevel = level;
         Log4jUtils.updateAppender(this, logFileAppender, level);
         //debug("%s started logging to file with level %s", logger.getName(), level);
     }
+    /**
+     * Update the logger {@code FileAppender} level to match the
+     * default logfile level for this wrapper. This method is intended
+     * to be used after the logging to file has been programatically
+     * stopped or the wrapper was constructed with no file logging in mind.
+     *
+     * <p><i>Note that this will obviously have no effect if the {@code FileAppender}
+     * is already set to operate at the wrapped logfile level.</i></p>
+     *
+     * @see Log4jUtils#updateAppender(CommonLogger, Appender, Level)
+     * @see #stopLoggingToFile()
+     */
     public void startLoggingToFile() {
 
         Log4jUtils.updateAppender(this, logFileAppender, logFileLevel);
