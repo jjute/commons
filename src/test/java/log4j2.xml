@@ -18,8 +18,7 @@
         </Logger>
 
         <Logger name="ykcommons" level="DEBUG">
-<!--      <AppenderRef ref="LogFile"/>-->
-<!--            <AppenderRef ref="Console2"/>-->
+            <AppenderRef ref="Console"/>
         </Logger>
 
         <Root level="INFO">
