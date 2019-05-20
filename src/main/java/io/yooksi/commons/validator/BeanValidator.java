@@ -231,7 +231,7 @@ public final class BeanValidator {
          */
         LibraryLogger.printf(level, message);
         LibraryLogger.debug(message, new Exception(String.format("Field '%s' with value '%s' has violated " +
-                "annotation constrains of %s", field, value, annotation.annotationType().getName())));
+                "annotation constrains of %s", field, value, annotation.annotationType().getSimpleName())));
     }
 
     private static <T> java.util.Set<ConstraintViolation<T>> validateConstructorParams(Constructor<T> c, Object...p) {
