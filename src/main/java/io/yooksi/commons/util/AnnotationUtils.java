@@ -1,5 +1,6 @@
 package io.yooksi.commons.util;
 
+import io.yooksi.commons.define.LibraryAnnotation;
 import io.yooksi.commons.define.MethodsNotNull;
 import org.jetbrains.annotations.Contract;
 
@@ -77,6 +78,14 @@ public class AnnotationUtils {
             throw new IllegalStateException(String.format("%s: Expected to find attribute %s(%s) in annotation %s",
                     e.getClass().getName(), attribute, clazz.getSimpleName(), annotation.getClass().getSimpleName()));
         }
+    }
+
+    /**
+     * @return {@code true} if the supplied annotation belongs to this library.
+     * @see LibraryAnnotation
+     */
+    public static boolean isLibraryAnnotation(Annotation annotation) {
+        return annotation.annotationType().getDeclaredAnnotation(LibraryAnnotation.class) != null;
     }
 
     /**

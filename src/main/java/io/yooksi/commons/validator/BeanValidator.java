@@ -200,23 +200,30 @@ public final class BeanValidator {
         Object value = violation.getInvalidValue();
         Object field = violation.getPropertyPath();
         String message = violation.getMessage();
+        Level level = Level.ERROR;
 
         Annotation annotation = violation.getConstraintDescriptor().getAnnotation();
-        java.util.Map<String, Object> attributes = AnnotationUtils.getAttributes(annotation);
-        String sLevel = AnnotationUtils.getAttributeValue(annotation, "level", String.class);
-        Level level = Level.toLevel(sLevel, Level.ERROR);
-
-        /* Parse our annotation violation message and replace all words marked with the regex key
-         * with an annotation attribute value that holds the same name.
+        /*
+         * Process violation message and level only if the
+         * annotation belongs to commons library.
          */
-        Matcher matcher = PARSE_REGEX.getKey().matcher(message);
-        while (matcher.find())
+        if (AnnotationUtils.isLibraryAnnotation(annotation))
         {
-            String group = matcher.group(PARSE_REGEX.getValue());
-            Object oReplacement = group.equals("value") ? value : attributes.get(group);
+            java.util.Map<String, Object> attributes = AnnotationUtils.getAttributes(annotation);
+            String sLevel = AnnotationUtils.getAttributeValue(annotation, "level", String.class);
+            level = Level.toLevel(sLevel, level);
 
-            String sReplacement = StringUtils.smartQuote(oReplacement);
-            message = message.replace(REGEX_KEY + group, sReplacement);
+            /* Parse our annotation violation message and replace all words marked with the regex key
+             * with an annotation attribute value that holds the same name.
+             */
+            Matcher matcher = PARSE_REGEX.getKey().matcher(message);
+            while (matcher.find()) {
+                String group = matcher.group(PARSE_REGEX.getValue());
+                Object oReplacement = group.equals("value") ? value : attributes.get(group);
+
+                String sReplacement = StringUtils.smartQuote(oReplacement);
+                message = message.replace(REGEX_KEY + group, sReplacement);
+            }
         }
 
         /* Print the violation message to console with the appropriate level.

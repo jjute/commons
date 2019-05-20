@@ -11,6 +11,7 @@ import java.lang.annotation.*;
  * an explicit nullness annotation on the element that overrides it
  */
 @Documented
+@LibraryAnnotation
 @TypeQualifierDefault({ ElementType.METHOD, ElementType.PARAMETER })
 @TypeQualifierNickname @Nonnull
 @Target(ElementType.TYPE)

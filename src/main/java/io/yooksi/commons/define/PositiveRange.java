@@ -12,6 +12,7 @@ import java.lang.annotation.*;
  * The annotated element must at all times be a number with a positive value
  * that does not exceed the maximum defined value {@code max()}.
  */
+@LibraryAnnotation
 @TypeQualifierNickname @Nonnull
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, })
