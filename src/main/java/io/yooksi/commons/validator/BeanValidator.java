@@ -12,6 +12,7 @@ import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Contract;
 
+import javax.validation.groups.Default;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -49,15 +50,21 @@ public final class BeanValidator {
     }
 
     /**
-     * @param <T> class of the object being validated
+     * Validate and process all constraints on object.
+     *
+     * @param groups the group or list of groups targeted for validation (defaults to {@link Default})
+     * @param object instance of the object to validate
+     * @param <T> object type being validated
      * @return object being validated <i>(for convenience)</i>
      * @throws javax.validation.UnexpectedTypeException No validator could be found for constraint
      * given to object being validated. This happens when the object data type doesn't match the
      * data type the validator was intended to validate.
+     * @see #processViolation(ConstraintViolation)
      */
-    public static <T> T validate(T object) {
+    public static <T> T validate(T object, Class<?>...groups) {
 
-        for (ConstraintViolation violation : validator.validate(object)) {
+        LibraryLogger.debug("Validating object %s", object);
+        for (ConstraintViolation violation : validator.validate(object, groups)) {
             processViolation(violation);
         }
         return object;
