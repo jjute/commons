@@ -2,10 +2,8 @@ package commons;
 
 import io.yooksi.commons.define.PositiveRange;
 
-import javax.validation.GroupSequence;
-import javax.validation.groups.Default;
-
-public class TestClass {
+@SuppressWarnings("unused")
+class TestClass {
 
     interface accessibleFieldChecks {}
 

@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 @MethodsNotNull
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class AnnotationUtils {
 
     /**

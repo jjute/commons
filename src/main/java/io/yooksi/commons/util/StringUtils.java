@@ -3,6 +3,7 @@ package io.yooksi.commons.util;
 import io.yooksi.commons.define.MethodsNotNull;
 
 @MethodsNotNull
+@SuppressWarnings("WeakerAccess")
 public class StringUtils {
 
     /**

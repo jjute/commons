@@ -155,6 +155,7 @@ public final class Log4jUtils {
              * Not quite sure what this parameter does so just set it to null...
              */
             String includeLoc = null;
+            //noinspection ConstantConditions
             LoggerConfig loggerConfig = LoggerConfig.createLogger(false, logger.logLevel,
                     logger.name, includeLoc, refs,null, config, null);
 

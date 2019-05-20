@@ -13,12 +13,11 @@ public class LoggerTest {
 
     @Test
     public void testloggingToLogFileSimple() throws IOException {
-
-        CommonLogger test = new CommonLogger("test", Level.TRACE, Level.INFO);
         TestUtils.assertTextFileLineCount(testLoggingToLogFile(Level.TRACE, Level.INFO), 1);
     }
 
     @Test
+    @SuppressWarnings("unused")
     public void testloggingToLogFileMultiLoggers() throws IOException {
 
         CommonLogger test1 = new CommonLogger("test", Level.ALL, Level.INFO);

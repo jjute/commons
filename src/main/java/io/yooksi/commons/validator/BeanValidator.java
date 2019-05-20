@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @MethodsNotNull
+@SuppressWarnings({"unused", "WeakerAccess"})
 public final class BeanValidator {
 
     private static final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();

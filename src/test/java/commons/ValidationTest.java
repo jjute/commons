@@ -41,6 +41,7 @@ public class ValidationTest {
     }
 
     @Test
+    @SuppressWarnings("unused")
     public void testMethodReturnValueValidation() {
 
         ValidationTest test = AOPProxy.createValidationProxy(new ValidationTest());
@@ -52,6 +53,7 @@ public class ValidationTest {
         LibraryLogger.info("Method should have been intercepted with args [%s, %d]", arg1, arg2);
     }
 
+    @SuppressWarnings("SameReturnValue")
     public @NotNull Object callMethodReturnValueValidation() {
         return null;
     }
