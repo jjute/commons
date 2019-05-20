@@ -118,7 +118,7 @@ public final class BeanValidator {
          * Now validate the class instance that holds the method to see if
          * all fields are still complying with annotation constraints.
          * However do this only if the method is not explicitly annotated
-         * with a contract that gurantees operation immutability.
+         * with a contract that guarantees operation immutability.
          */
         Contract contract = mi.getMethod().getDeclaredAnnotation(Contract.class);
         if (contract == null || !AnnotationUtils.isMethodContractPure(contract)) {

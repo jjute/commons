@@ -188,7 +188,7 @@ public class CommonLogger extends AbsCommonLogger {
     /**
      * Update the logger {@code FileAppender} level to match the
      * default logfile level for this wrapper. This method is intended
-     * to be used after the logging to file has been programatically
+     * to be used after the logging to file has been programmatically
      * stopped or the wrapper was constructed with no file logging in mind.
      *
      * <p><i>Note that this will obviously have no effect if the {@code FileAppender}

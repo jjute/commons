@@ -176,7 +176,7 @@ public final class Log4jUtils {
     public static @Nullable <T extends Appender> T findAppender(Class<T> clazz, LoggerConfig config) {
 
         /* It's important to use an instance of LoggerConfig as opposed to an instance
-         * of Configuration to search for appenders, the formet one has what we need.
+         * of Configuration to search for appenders, the former one has what we need.
          * Both are located in 'org.apache.logging.log4j.core.config' package.
          */
         java.util.Collection<Appender> appenders = config.getAppenders().values();

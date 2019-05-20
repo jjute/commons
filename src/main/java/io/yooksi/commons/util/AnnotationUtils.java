@@ -52,7 +52,7 @@ public class AnnotationUtils {
      * @param attribute complete name <i>(without brackets)</i> of the method to search for
      * @return {@code null} if we were unable to resolve the method
      * @throws NoSuchMethodException if the annotation doesn't have any attribute
-     * that coresponds to given parameters
+     * that corresponds to given parameters
      */
     public static javafx.util.Pair<Method, Object> getAttribute(Annotation annotation, @NotEmpty String attribute) throws NoSuchMethodException {
 
