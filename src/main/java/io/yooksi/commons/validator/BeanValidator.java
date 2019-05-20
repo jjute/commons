@@ -72,7 +72,8 @@ public final class BeanValidator {
 
     /**
      * <p>Validate method parameters with Java Bean validation.</p>
-     * Usually called from a method interception system.
+     * <p>Usually called from a method interception system.</p>
+     * <i>Note that {@code private} methods <b>cannot</b> be validated.</i>
      *
      * @param method the method for which the parameter constraints is validated
      * @param object the object on which the method to validate is invoked
@@ -88,8 +89,9 @@ public final class BeanValidator {
     }
 
     /**
-     * Called from a method interception system to validate method parameters,
-     * return value and the state of the class instance after it's invocation.
+     * <p>Called from a method interception system to validate method parameters,
+     * return value and the state of the class instance after it's invocation.</p>
+     * <i>Note that {@code private} methods <b>cannot</b> be validated.</i>
      *
      * @param mi method joinpoint given to an interceptor upon method-call
      * @return method invocation return value
