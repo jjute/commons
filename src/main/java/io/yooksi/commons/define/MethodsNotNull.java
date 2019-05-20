@@ -16,4 +16,4 @@ import java.lang.annotation.*;
 @TypeQualifierNickname @Nonnull
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.CLASS)
-public @interface MethodsNotNull { }
+public @interface MethodsNotNull {}
