@@ -11,6 +11,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.TestOnly;
 
 import javax.validation.groups.Default;
 import javax.validation.ConstraintViolation;
@@ -43,6 +44,13 @@ public final class BeanValidator {
      */
     private static final javafx.util.Pair<Pattern, Integer> PARSE_REGEX = new Pair<>(
             Pattern.compile(String.format("(?:\\%s)([a-zA-Z0-9_-]*)", REGEX_KEY)), 1);
+
+    /**
+     * This set contains a list of recently processed constraint violations.
+     * It is intended and should be used only for testing purposes.
+     */
+    @TestOnly
+    public static final java.util.Set <ConstraintViolation> recentViolations = new java.util.HashSet<>();
 
     /* Make the constructor private to disable instantiation */
     private BeanValidator() {
@@ -220,6 +228,8 @@ public final class BeanValidator {
      */
     private static void processViolation(ConstraintViolation violation) {
 
+        BeanValidator.recentViolations.add(violation);
+
         Object value = violation.getInvalidValue();
         Object field = violation.getPropertyPath();
         String message = violation.getMessage();
@@ -248,7 +258,6 @@ public final class BeanValidator {
                 message = message.replace(REGEX_KEY + group, sReplacement);
             }
         }
-
         /* Print the violation message to console with the appropriate level.
          * Also print an exception stack trace as a debug log
          */
