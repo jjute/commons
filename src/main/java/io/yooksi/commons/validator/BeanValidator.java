@@ -113,8 +113,22 @@ public final class BeanValidator {
         if (contract == null || !AnnotationUtils.isMethodContractPure(contract)) {
             validate(mi.getThis());
         }
-        // TODO: Validate return value here as well
+        validateMethodReturnValue(mi.getThis(), mi.getMethod(), result);
         return result;
+    }
+
+    /**
+     * Validate and process all return value constraints of the given method.
+     *
+     * @param object the object on which the method to validate is invoked
+     * @param method the method for which the return value constraints is validated
+     * @param value the value returned by the given method
+     */
+    private static void validateMethodReturnValue(Object object, Method method, Object value) {
+
+        for (ConstraintViolation violation : exeValidator.validateReturnValue(object, method, value)) {
+            processViolation(violation);
+        }
     }
 
     /**
