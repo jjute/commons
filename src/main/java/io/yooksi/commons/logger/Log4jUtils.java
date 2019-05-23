@@ -277,7 +277,7 @@ public final class Log4jUtils {
         return new javafx.util.Pair<>(null, null);
     }
 
-    public static @Nullable Level getApppenderLevel(AppenderRef ref, LoggerConfig loggerConfig) {
+    public static @Nullable Level getAppenderLevel(AppenderRef ref, LoggerConfig loggerConfig) {
 
         if (ref.getLevel() == null) {
             while (loggerConfig != null)
