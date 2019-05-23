@@ -12,6 +12,24 @@ import java.io.IOException;
 public class LoggerTest {
 
     @Test
+    public void testLibraryLogging() throws IOException {
+
+        for (Level logLvl : Level.values())
+        {
+            LibraryLogger.clearLogFile();
+
+            String log = "TLL: Printing %s to logfile with CommonLogger at level %s";
+            LibraryLogger.printf(logLvl, log, logLvl, logLvl);
+
+            boolean canLogToFile = logLvl.intLevel() <= LibraryLogger.get().getLevel().intLevel();
+
+            java.io.File logFile = LibraryLogger.getLogFile();
+            TestUtils.assertTextFileLineCount(logFile, canLogToFile ? 1 : 0);
+        }
+
+    }
+
+    @Test
     public void testLoggingToLogFileSimple() throws IOException {
         TestUtils.assertTextFileLineCount(testLoggingToLogFile(Level.TRACE, Level.INFO), 1);
     }
