@@ -16,4 +16,16 @@ class TestUtils {
     static long getTextFileLineCount(java.io.File file) throws IOException {
         return java.nio.file.Files.lines(file.toPath()).count();
     }
+
+    static void assertThrowCause(Throwable t, Class<? extends Throwable> c) {
+        Assertions.assertEquals(c, t.getCause().getClass());
+    }
+
+    static IllegalStateException assertThrowIllegalException(Executable executable) {
+        return Assertions.assertThrows(IllegalStateException.class, executable);
+    }
+
+    static void assertIllegalExceptionThrowCause(Executable executable, Class<? extends Throwable> cause) {
+        assertThrowCause(assertThrowIllegalException(executable), cause);
+    }
 }
