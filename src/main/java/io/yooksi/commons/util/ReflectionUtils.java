@@ -3,6 +3,7 @@ package io.yooksi.commons.util;
 import io.yooksi.commons.define.MethodsNotNull;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 
@@ -75,7 +76,7 @@ public class ReflectionUtils {
      */
     @Contract(pure = true)
     @SuppressWarnings("ConstantConditions")
-    public static <T> T readField(Object target, String fieldName, boolean forceAccess, Class<T> clazz) {
+    public static <T> @Nullable T readField(Object target, String fieldName, boolean forceAccess, Class<T> clazz) {
 
         Object value = null;
         try {
@@ -105,7 +106,7 @@ public class ReflectionUtils {
      * Helper method to read object fields marked as private or protected using reflection.
      * @see #readField(Object, String, boolean, Class)
      */
-    public static <T> T readPrivateField(Object target, String fieldName, Class<T> clazz) {
+    public static <T> @Nullable T readPrivateField(Object target, String fieldName, Class<T> clazz) {
         return readField(target, fieldName, true, clazz);
     }
 }
