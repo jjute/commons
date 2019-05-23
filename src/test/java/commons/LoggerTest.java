@@ -77,6 +77,7 @@ public class LoggerTest {
         }
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     private static java.io.File testLoggingToLogFile(Level level, Level logFileLevel) {
 
         CommonLogger logger = new CommonLogger("test", level, logFileLevel, false, true, false);
@@ -91,6 +92,7 @@ public class LoggerTest {
         return logger.getLogFile();
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     private static java.io.File testReloadLoggingToLogFile(Level level, Level logFileLevel) {
 
         CommonLogger logger = new CommonLogger("test", level, logFileLevel, false, true, false);

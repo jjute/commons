@@ -16,7 +16,7 @@ import java.util.*;
  * @author krosenvold
  * @see <a href="https://github.com/krosenvold/struts2/tree/master/xwork-core">strut2 on Github</a>
  */
-@SuppressWarnings({"unused", "WeakerAccess"})
+@SuppressWarnings({"unused", "WeakerAccess", "SpellCheckingInspection"})
 public class ClassLoaderUtil {
 
     /**
