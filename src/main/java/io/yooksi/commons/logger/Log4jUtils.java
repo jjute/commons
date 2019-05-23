@@ -2,7 +2,6 @@ package io.yooksi.commons.logger;
 
 import io.yooksi.commons.define.MethodsNotNull;
 import io.yooksi.commons.util.ReflectionUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Layout;
@@ -17,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @MethodsNotNull
 @SuppressWarnings({"unused", "WeakerAccess"})
@@ -303,8 +303,8 @@ public final class Log4jUtils {
 
     public static void updateAppendersForLevel(java.util.Map<Appender, Level> data, CommonLogger logger) {
 
-        AppenderControlArraySet appenderCtrls = ReflectionUtils.readPrivateField(
-                logger.loggerConfig, "appenders", AppenderControlArraySet.class);
+        AppenderControlArraySet appenderCtrls = Objects.requireNonNull(ReflectionUtils.readPrivateField(
+                logger.loggerConfig, "appenders", AppenderControlArraySet.class));
 
         for (java.util.Map.Entry<Appender, Level> entry : data.entrySet())
         {

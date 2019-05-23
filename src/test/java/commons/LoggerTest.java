@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 //@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@SuppressWarnings("WeakerAccess")
 public class LoggerTest {
 
     @Test

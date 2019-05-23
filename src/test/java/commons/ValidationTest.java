@@ -56,7 +56,6 @@ public class ValidationTest {
 
     private static void assertBeanViolationCount(int expectation) {
 
-        String log = "Expected to fail " + expectation + " validations";
         Assertions.assertEquals(expectation, BeanValidator.recentViolations.size());
         BeanValidator.recentViolations.clear();
     }

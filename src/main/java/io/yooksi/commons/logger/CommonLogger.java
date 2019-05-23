@@ -1,16 +1,12 @@
 package io.yooksi.commons.logger;
 
 import io.yooksi.commons.define.MethodsNotNull;
-import io.yooksi.commons.util.ReflectionUtils;
-import io.yooksi.commons.util.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractOutputStreamAppender;
 import org.apache.logging.log4j.core.config.*;
-
-import java.util.NoSuchElementException;
 
 @MethodsNotNull
 @SuppressWarnings({"unused", "WeakerAccess"})

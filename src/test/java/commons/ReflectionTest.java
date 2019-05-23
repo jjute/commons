@@ -6,30 +6,31 @@ import org.junit.jupiter.api.Test;
 
 import static commons.TestUtils.*;
 
-
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class ReflectionTest {
 
-    private class TestData { int id = 0; }
-
-    private static Object target = new ReflectionTest();
+    private class TestData {}
+    private static final Object target = new ReflectionTest();
 
     public TestData publicField = new TestData();
     private TestData privateField = new TestData();
 
     @Test
-    public void testReadFieldReflection() throws NoSuchFieldException {
+    public void testReadFieldReflection() {
 
         TestData result = ReflectionUtils.readField(target, "publicField", false, TestData.class);
-        Assertions.assertEquals(0, result.id);
+        Assertions.assertNotNull(result);
 
         assertIllegalExceptionThrowCause(this::testReadPrivateField, IllegalArgumentException.class);
         assertIllegalExceptionThrowCause(this::testReadFieldClassCastException, ClassCastException.class);
     }
 
-    private void testReadPrivateField() throws NoSuchFieldException {
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private void testReadPrivateField() {
         ReflectionUtils.readField(target, "privateField", false, TestData.class);
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void testReadFieldClassCastException() {
         ReflectionUtils.readField(target, "publicField", false, ReflectionTest.class);
     }
