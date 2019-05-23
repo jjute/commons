@@ -20,9 +20,9 @@ public class LoggerTest {
     @SuppressWarnings("unused")
     public void testLoggingToLogFileMultiLoggers() throws IOException {
 
-        CommonLogger test1 = new CommonLogger("test", Level.ALL, Level.INFO, true, false);
-        CommonLogger test2 = new CommonLogger("test", Level.ALL, Level.INFO,  true, false);
-        CommonLogger test3 = new CommonLogger("test", Level.ALL, Level.INFO,  true, false);
+        CommonLogger test1 = new CommonLogger("test", Level.ALL, Level.INFO, false, true, false);
+        CommonLogger test2 = new CommonLogger("test", Level.ALL, Level.INFO, false, true, false);
+        CommonLogger test3 = new CommonLogger("test", Level.ALL, Level.INFO, false, true, false);
 
         test3.clearLogFile();
         test3.info("Printing INFO to logfile with CommonLogger at level ALL");
@@ -61,7 +61,7 @@ public class LoggerTest {
 
     private static java.io.File testLoggingToLogFile(Level level, Level logFileLevel) {
 
-        CommonLogger logger = new CommonLogger("test", level, logFileLevel,  true, false);
+        CommonLogger logger = new CommonLogger("test", level, logFileLevel, false, true, false);
         logger.clearLogFile();
 
         if (level.equals(Level.OFF) || logFileLevel.equals(Level.OFF)) {
@@ -75,7 +75,7 @@ public class LoggerTest {
 
     private static java.io.File testReloadLoggingToLogFile(Level level, Level logFileLevel) {
 
-        CommonLogger logger = new CommonLogger("test", level, logFileLevel,  true, false);
+        CommonLogger logger = new CommonLogger("test", level, logFileLevel, false, true, false);
         logger.stopLoggingToFile();
         logger.clearLogFile();
 

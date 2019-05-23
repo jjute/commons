@@ -13,8 +13,8 @@ import org.jetbrains.annotations.Contract;
 @SuppressWarnings("unused")
 public final class LibraryLogger {
 
-    private static final CommonLogger logger =
-            new CommonLogger("ykcommons", Level.DEBUG, true);
+    private static final CommonLogger logger = new CommonLogger("ykcommons",
+            Level.DEBUG, true, true, true, false);
 
     /* Make the constructor private to disable instantiation */
     private LibraryLogger() {
@@ -25,6 +25,14 @@ public final class LibraryLogger {
     public static Logger get() {
         return logger.getLogger();
     }
+
+    public static java.io.File getLogFile() {
+        return logger.getLogFile();
+    }
+    public static void clearLogFile() {
+        logger.clearLogFile();
+    }
+
     /*
      * Short-hand methods to print logs to console. For more methods
      * use the static getter method to get a hold of a Logger instance.
