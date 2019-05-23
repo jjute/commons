@@ -1,10 +1,9 @@
 package commons;
 
 import io.yooksi.commons.logger.CommonLogger;
+import io.yooksi.commons.logger.LibraryLogger;
 import org.apache.logging.log4j.Level;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
