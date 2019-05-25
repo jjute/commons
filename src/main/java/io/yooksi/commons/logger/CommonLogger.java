@@ -18,7 +18,7 @@ public class CommonLogger extends AbsCommonLogger {
     static final String[] FILE_APPENDERS = new String[]{ "CLFile", "File" };
 
     /** Used for internal class logging, particularly by the class constructor */
-    static final CommonLogger LOGGER = new CommonLogger("ykc-internal");
+    static final CommonLogger LOGGER = new CommonLogger("CommonLogger", true);
 
     final LoggerContext context;
     final Configuration config;
@@ -109,7 +109,7 @@ public class CommonLogger extends AbsCommonLogger {
     }
 
 
-    private CommonLogger(String logger) {
+    CommonLogger(String logger, boolean clearLogFile) {
 
         this.name = logger;
         this.logLevel = Level.ALL;
@@ -123,9 +123,8 @@ public class CommonLogger extends AbsCommonLogger {
         this.logFileAppender = Log4jUtils.findFileAppender(FILE_APPENDERS, loggerConfig);
         this.logger = context.getLogger(logger);
 
-//        loggerConfig.setAdditive(false);
-//        loggerConfig.setLevel(logLevel);
-//        context.updateLoggers();
+        if (clearLogFile)
+            clearLogFile();
     }
 
     private static LoggerContext getInternalContext() {

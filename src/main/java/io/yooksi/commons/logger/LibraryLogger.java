@@ -13,8 +13,7 @@ import org.jetbrains.annotations.Contract;
 @SuppressWarnings("unused")
 public final class LibraryLogger {
 
-    private static final CommonLogger logger = new CommonLogger("ykcommons",
-            Level.DEBUG, true, true, true, false);
+    private static final CommonLogger logger = new CommonLogger("YKCommons", false);
 
     /* Make the constructor private to disable instantiation */
     private LibraryLogger() {
