@@ -95,7 +95,7 @@ public class CommonLogger extends AbsCommonLogger {
          * We have to call this if we want to see our changes take place
          */
         context.updateLoggers();
-        this.logger.debug("Finished constructing logger");
+        LOGGER.debug("Finished constructing logger");
     }
 
     /**
