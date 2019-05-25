@@ -267,8 +267,8 @@ public class CommonLogger extends AbsCommonLogger {
     public void error(String log) {
         logger.error(log);
     }
-    public void error(String log, Object...params) {
-        logger.printf(Level.ERROR, log, params);
+    public void error(String format, Object...params) {
+        logger.printf(Level.ERROR, format, params);
     }
     public void error(String log, Throwable t) {
         logger.error(log, t);
