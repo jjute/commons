@@ -4,9 +4,12 @@ import io.yooksi.commons.define.MethodsNotNull;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractOutputStreamAppender;
 import org.apache.logging.log4j.core.config.*;
+import org.apache.logging.log4j.core.filter.AbstractFilter;
+import org.apache.logging.log4j.core.filter.LevelRangeFilter;
 
 @MethodsNotNull
 @SuppressWarnings({"unused", "WeakerAccess"})
@@ -24,7 +27,7 @@ public class CommonLogger extends AbsCommonLogger {
     final Configuration config;
     final LoggerConfig loggerConfig;
 
-    final AbstractOutputStreamAppender logFileAppender;
+    final AppenderData<AbstractOutputStreamAppender> logFileAppender;
 
     final String name; final Logger logger;
     final Level logLevel; Level logFileLevel;
@@ -66,24 +69,50 @@ public class CommonLogger extends AbsCommonLogger {
         final String logFilePath = Log4jUtils.getStandardLogFilePath(!logFile.isEmpty() ? logFile : logger);
         loggerConfig = Log4jUtils.getOrCreateLoggerConfig(this, additive);
 
-        Appender consoleAppender = Log4jUtils.getOrInitConsoleAppender(this);
-        AbstractOutputStreamAppender fileAppender = Log4jUtils.getOrInitFileAppender(
-                this, consoleAppender.getLayout(), logFilePath);
+        AppenderData consoleAppender = Log4jUtils.getOrInitConsoleAppender(this);
+        AppenderData<AbstractOutputStreamAppender> fileAppender = Log4jUtils.getOrInitFileAppender(
+                this, consoleAppender.getAppender().getLayout(), logFilePath);
 
         if (!logFile.isEmpty())
         {
-            String filePath = Log4jUtils.getLogFileName(fileAppender);
+            String filePath = Log4jUtils.getLogFileName(fileAppender.getAppender());
             if (!filePath.equals(logFilePath))
             {
                 LOGGER.debug("Creating dedicated FileAppender for logger " + name);
-                loggerConfig.removeAppender(fileAppender.getName());
-                fileAppender = Log4jUtils.createNewFileAppender(this, fileAppender.getLayout(), logFilePath, true);
+                loggerConfig.removeAppender(fileAppender.getAppender().getName());
+                fileAppender = new AppenderData<>(loggerConfig, Log4jUtils.createNewFileAppender(
+                        this, fileAppender.getAppender().getLayout(), logFilePath, true), logFileLevel);
             }
         }
 
-        java.util.Map<Appender, Level> data = new java.util.HashMap<>();
-        data.put(consoleAppender, logLevel); data.put(fileAppender, logFileLevel);
-        Log4jUtils.updateAppendersForLevel(data, this);
+        if (!consoleAppender.isLevel(logLevel)) {
+            /*
+             * If the appender belongs to this LoggerConfig it means that no reachable
+             * appender of that type was found so we don't have to worry about additivity
+             */
+            if (consoleAppender.isLoggerConfig(loggerConfig)) {
+                Log4jUtils.updateAppender(loggerConfig, context, consoleAppender.getAppender(), logLevel);
+            }
+            else {
+                if (consoleAppender.isFiltering(logLevel)) {
+                    Log4jUtils.createNewConsoleAppender(this, consoleAppender, config, true, LevelRangeFilter
+                            .createFilter(Level.OFF, consoleAppender.getLevel(), Filter.Result.DENY, Filter.Result.NEUTRAL));
+                }
+                else {/* Logger is requesting a lower logging threshold so we have to disable
+                       * the additivity effect from this logger affecting the target logger
+
+                    consoleAppender.setFilter(context, AdditivityFilter.createFilter(this.name));
+
+                    TODO: Find away around this problem either by using filters or placing
+                        a dedicated local appender with the desired level in root LoggerConfig
+                        that will only accept events from this logger and filtering standard
+                        console logs with an additivity filter
+                    */
+                    LOGGER.wrap( Level.WARN,"Filtering logs with levels lower then root is currently not supported " +
+                            "due to how Log4j additivity works.", "Setting logger level to default level INFO.");
+                }
+            }
+        }
 
         this.logFileAppender = fileAppender;
         this.logger = context.getLogger(logger);
@@ -171,9 +200,6 @@ public class CommonLogger extends AbsCommonLogger {
     public String getName() {
         return name;
     }
-    protected AbstractOutputStreamAppender getLogFileAppender() {
-        return logFileAppender;
-    }
 
     /**
      * <p>{@code LoggerConfigs} are defined as {@code <logger>} blocks in the {@code log4j2.xml}
@@ -201,7 +227,7 @@ public class CommonLogger extends AbsCommonLogger {
     }
 
     public java.io.File getLogFile() {
-        return new java.io.File(Log4jUtils.getLogFileName(logFileAppender));
+        return new java.io.File(Log4jUtils.getLogFileName(logFileAppender.getAppender()));
     }
 
     public void clearLogFile() {
@@ -227,12 +253,12 @@ public class CommonLogger extends AbsCommonLogger {
      *     <li>{@link #startLoggingToFile()}</li>
      *     <li>{@link #stopLoggingToFile()}</li>
      * </ul>
-     * @see Log4jUtils#updateAppender(CommonLogger, Appender, Level)
+     * @see Log4jUtils#updateAppender(LoggerConfig, LoggerContext, Appender, Level)
      */
     public void setLogFileLevel(Level level) {
 
         logFileLevel = level;
-        Log4jUtils.updateAppender(this, logFileAppender, level);
+        Log4jUtils.updateAppender(loggerConfig, context, logFileAppender.getAppender(), level);
         //debug("%s started logging to file with level %s", logger.getName(), level);
     }
     /**
@@ -244,18 +270,18 @@ public class CommonLogger extends AbsCommonLogger {
      * <p><i>Note that this will obviously have no effect if the {@code FileAppender}
      * is already set to operate at the wrapped logfile level.</i></p>
      *
-     * @see Log4jUtils#updateAppender(CommonLogger, Appender, Level)
+     * @see Log4jUtils#updateAppender(LoggerConfig, LoggerContext, Appender, Level)
      * @see #stopLoggingToFile()
      */
     public void startLoggingToFile() {
 
-        Log4jUtils.updateAppender(this, logFileAppender, logFileLevel);
+        Log4jUtils.updateAppender(loggerConfig, context, logFileAppender.getAppender(), logFileLevel);
         //debug("%s started logging to file with level %s", logger.getName(), logFileLevel);
     }
 
     public void stopLoggingToFile() {
 
-        Log4jUtils.updateAppender(this, logFileAppender, Level.OFF);
+        Log4jUtils.updateAppender(loggerConfig, context, logFileAppender.getAppender(), Level.OFF);
         //debug("%s stopped logging to file with level %s", logger.getName(), logFileLevel);
     }
 
