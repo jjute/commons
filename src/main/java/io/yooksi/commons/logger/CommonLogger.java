@@ -46,7 +46,7 @@ public class CommonLogger extends AbsCommonLogger {
      * @param logLevel console logging level
      * @param logFileLevel logfile logging level
      */
-    public CommonLogger(String logger, Level logLevel, Level logFileLevel, boolean dedicatedFile, boolean currentContext, boolean additive) {
+    public CommonLogger(String logger, Level logLevel, String logFile, Level logFileLevel, boolean currentContext, boolean additive) {
 
         LOGGER.printf(Level.DEBUG, "Initializing new CommonLogger %s " +
                 "with level " + "%s(log), %s(file)", logger, logLevel, logFileLevel);
@@ -63,14 +63,15 @@ public class CommonLogger extends AbsCommonLogger {
 
         LOGGER.printf(Level.DEBUG, "Using %s Configuration found in context %s", config.getName(), context.getName());
 
-        final String logFilePath = Log4jUtils.getStandardLogFilePath(logger);
+        final String logFilePath = Log4jUtils.getStandardLogFilePath(!logFile.isEmpty() ? logFile : logger);
         loggerConfig = Log4jUtils.getOrCreateLoggerConfig(this, additive);
 
         Appender consoleAppender = Log4jUtils.getOrInitConsoleAppender(this);
         AbstractOutputStreamAppender fileAppender = Log4jUtils.getOrInitFileAppender(
                 this, consoleAppender.getLayout(), logFilePath);
 
-        if (dedicatedFile) {
+        if (!logFile.isEmpty())
+        {
             String filePath = Log4jUtils.getLogFileName(fileAppender);
             if (!filePath.equals(logFilePath))
             {
@@ -101,13 +102,19 @@ public class CommonLogger extends AbsCommonLogger {
      * Overload constructor for when we don't want to log to file,
      * or when we want the file and console logging levels to be the same.
      *
-     * @param logToFile should we enable or disable logging to file
-     * @see #CommonLogger(String, Level, Level, boolean, boolean, boolean)
+     * @see #CommonLogger(String, Level, String, Level, boolean, boolean)
      */
-    public CommonLogger(String logger, Level logLevel, boolean logToFile, boolean dedicatedFile, boolean currentContext, boolean additive) {
-        this(logger, logLevel, logToFile ? logLevel : Level.OFF, dedicatedFile, currentContext, additive);
+    public CommonLogger(String logger, Level logLevel, Level logFileLevel, boolean dedicatedFile, boolean currentContext, boolean additive) {
+        this(logger, logLevel, dedicatedFile ? logger : "", logFileLevel, currentContext, additive);
     }
 
+    public CommonLogger(String logger, Level logLevel, boolean dedicatedFile, boolean currentContext, boolean additive) {
+        this(logger, logLevel, dedicatedFile ? logger : "", logLevel, currentContext, additive);
+    }
+
+    public CommonLogger(String logger, Level logLevel, String logFile, boolean currentContext, boolean additive) {
+        this(logger, logLevel, logFile, logLevel, currentContext, additive);
+    }
 
     CommonLogger(String logger, boolean clearLogFile) {
 
