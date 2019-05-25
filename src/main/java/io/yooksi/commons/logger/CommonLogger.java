@@ -120,7 +120,7 @@ public class CommonLogger extends AbsCommonLogger {
         loggerConfig = config.getLoggerConfig(logger);
 
         Class<AbstractOutputStreamAppender> clazz = AbstractOutputStreamAppender.class;
-        this.logFileAppender = Log4jUtils.findFileAppender(CONSOLE_APPENDERS, loggerConfig);
+        this.logFileAppender = Log4jUtils.findFileAppender(FILE_APPENDERS, loggerConfig);
         this.logger = context.getLogger(logger);
 
 //        loggerConfig.setAdditive(false);
