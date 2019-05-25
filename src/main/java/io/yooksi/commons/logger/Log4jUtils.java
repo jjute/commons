@@ -37,7 +37,7 @@ public final class Log4jUtils {
      */
     public static ConsoleAppender createNewConsoleAppender(CommonLogger logger, Layout<? extends java.io.Serializable> layout, Configuration config, boolean initialize) {
 
-        logger.getLogger().printf(Level.DEBUG, "Creating new ConsoleAppender for logger %s", logger.name);
+        CommonLogger.LOGGER.debug("Creating new ConsoleAppender for logger %s", logger.name);
 
         ConsoleAppender consoleAppender = ConsoleAppender.newBuilder()
                 .setName(CommonLogger.CONSOLE_APPENDERS[0])
@@ -68,7 +68,7 @@ public final class Log4jUtils {
     public static FileAppender createNewFileAppender(CommonLogger logger, Layout<? extends Serializable> layout,
                                                      String logFilePath, boolean initialize) throws ExceptionInInitializerError {
 
-        logger.getLogger().printf(Level.DEBUG, "Creating new FileAppender for logger %s", logger.name);
+        CommonLogger.LOGGER.debug( "Creating new FileAppender for logger %s", logger.name);
 
         FileAppender fileAppender = FileAppender.newBuilder()
                 .setName(CommonLogger.FILE_APPENDERS[0])
@@ -95,7 +95,7 @@ public final class Log4jUtils {
         Appender consoleAppender = findAppender(CommonLogger.CONSOLE_APPENDERS, logger.loggerConfig);
         if (consoleAppender == null)
         {
-            logger.getLogger().warn("Unable to find reachable console appender in LoggerConfig");
+            CommonLogger.LOGGER.warn("Unable to find reachable console appender in LoggerConfig");
             consoleAppender = findAppender(CommonLogger.CONSOLE_APPENDERS, logger.config);
             if (consoleAppender != null) {
                 return initializeAppender(logger, consoleAppender, logger.logLevel);
@@ -120,7 +120,7 @@ public final class Log4jUtils {
         AbstractOutputStreamAppender fileAppender = findFileAppender(CommonLogger.FILE_APPENDERS, logger.loggerConfig);
         if (fileAppender == null)
         {
-            logger.getLogger().warn("Unable to find reachable file appender in LoggerConfig");
+            CommonLogger.LOGGER.warn("Unable to find reachable file appender in LoggerConfig");
             fileAppender = findFileAppender(CommonLogger.FILE_APPENDERS, logger.config);
             if (fileAppender != null) {
                 return initializeAppender(logger, fileAppender, logger.logLevel);
@@ -141,7 +141,7 @@ public final class Log4jUtils {
     public static <T extends Appender> T initializeAppender(CommonLogger logger, T appender, Level level) {
 
         String appenderClass = appender.getClass().getSimpleName();
-        logger.getLogger().printf(Level.DEBUG, "Initializing %s for logger %s", appenderClass, logger.name);
+        CommonLogger.LOGGER.debug("Initializing %s for logger %s", appenderClass, logger.name);
 
         logger.loggerConfig.addAppender(appender, level, null);
 
@@ -166,14 +166,14 @@ public final class Log4jUtils {
         LoggerConfig loggerConfig = logger.loggerConfig;
         if (findAppender(new String[]{appender.getName()}, loggerConfig) != null)
         {
-            logger.getLogger().printf(Level.DEBUG, "Updating %s %s in LoggerConfig %s to level %s",
+            CommonLogger.LOGGER.debug("Updating %s %s in LoggerConfig %s to level %s",
                     appender.getClass().getSimpleName(), appender.getName(), loggerConfig.getName(), level);
 
             loggerConfig.removeAppender(appender.getName());
             loggerConfig.addAppender(appender, level, null);
             logger.context.updateLoggers();
         }
-        else logger.getLogger().printf(Level.ERROR, "Trying to update non-existing %s %s in LoggerConfig %s!",
+        else CommonLogger.LOGGER.error("Trying to update non-existing %s %s in LoggerConfig %s!",
                 appender.getClass().getSimpleName(), appender.getName(), loggerConfig.getName());
     }
 
@@ -189,8 +189,7 @@ public final class Log4jUtils {
 
         if (!logger.config.getLoggers().containsKey(logger.name))
         {
-            String log = "Creating new LoggerConfig for %s in current context";
-            logger.getLogger().printf(Level.DEBUG, log, logger.name);
+            CommonLogger.LOGGER.debug("Creating new LoggerConfig for %s in current context", logger.name);
 
             /* includeLocation - whether location should be passed downstream
              * Not quite sure what this parameter does so just set it to null...
@@ -204,7 +203,7 @@ public final class Log4jUtils {
             return loggerConfig;
         }
         else {
-            logger.getLogger().printf(Level.DEBUG, "Getting LoggerConfig %s from current context", logger.name);
+            CommonLogger.LOGGER.debug("Getting LoggerConfig %s from current context", logger.name);
             return logger.config.getLoggerConfig(logger.name);
         }
     }
@@ -321,7 +320,7 @@ public final class Log4jUtils {
             catch (NoSuchElementException e1)
             {
                 String log = "Unable to find appender level for %s, creating new one";
-                logger.getLogger().printf(Level.DEBUG, log, appender.getName());
+                CommonLogger.LOGGER.debug(log, appender.getName());
                 boolean createdNewAppender = false;
 
                 if (AbstractOutputStreamAppender.class.isAssignableFrom(appender.getClass())) {
