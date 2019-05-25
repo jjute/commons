@@ -259,6 +259,13 @@ public class CommonLogger extends AbsCommonLogger {
         //debug("%s stopped logging to file with level %s", logger.getName(), logFileLevel);
     }
 
+    public void wrap(Level level, String...logs) {
+
+        for (String log : logs) {
+            printf(level, log);
+        }
+    }
+
     /*
      * Short-hand methods to print longs to console.
      */
