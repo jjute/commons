@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static commons.TestUtils.*;
 
-@SuppressWarnings({"unused", "WeakerAccess"})
+@SuppressWarnings({"unused", "WeakerAccess", "ResultOfMethodCallIgnored"})
 public class ReflectionTest {
 
     private class TestData {}
@@ -14,6 +14,31 @@ public class ReflectionTest {
 
     public TestData publicField = new TestData();
     private TestData privateField = new TestData();
+
+    private class Caller
+    {
+        private Class getCallerClass() {
+            return ReflectionUtils.getCallerClass(1);
+        }
+        private Class getCurrentCallerClass() {
+            return ReflectionUtils.getCallerClass(0);
+        }
+        private void failGettingCallerClass() {
+            ReflectionUtils.getCallerClass(-1);
+        }
+    }
+
+    @Test
+    public void testGetCallerClass() {
+
+        Caller caller = new Caller();
+
+        Assertions.assertDoesNotThrow(caller::getCurrentCallerClass);
+        Assertions.assertEquals(Caller.class, caller.getCurrentCallerClass());
+        Assertions.assertEquals(ReflectionTest.class, caller.getCallerClass());
+
+        Assertions.assertThrows(IllegalArgumentException.class, caller::failGettingCallerClass);
+    }
 
     @Test
     public void testReadFieldReflection() {
@@ -25,12 +50,9 @@ public class ReflectionTest {
         assertIllegalExceptionThrowCause(this::testReadFieldClassCastException, ClassCastException.class);
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void testReadPrivateField() {
         ReflectionUtils.readField(target, "privateField", false, TestData.class);
     }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void testReadFieldClassCastException() {
         ReflectionUtils.readField(target, "publicField", false, ReflectionTest.class);
     }
