@@ -3,15 +3,23 @@ package commons;
 import io.yooksi.commons.logger.CommonLogger;
 import io.yooksi.commons.logger.LibraryLogger;
 import org.apache.logging.log4j.Level;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.IOException;
 
-//@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SuppressWarnings("WeakerAccess")
 public class LoggerTest {
 
-    @Test
+    @Test @Order(1)
+    public void testLoggingToLogFileSimple() throws IOException {
+        TestUtils.assertTextFileLineCount(testLoggingToLogFile(Level.TRACE, Level.INFO), 1);
+    }
+
+    @Test @Order(2)
     public void testLibraryLogging() throws IOException {
 
         for (Level logLvl : Level.values())
@@ -29,12 +37,7 @@ public class LoggerTest {
 
     }
 
-    @Test
-    public void testLoggingToLogFileSimple() throws IOException {
-        TestUtils.assertTextFileLineCount(testLoggingToLogFile(Level.TRACE, Level.INFO), 1);
-    }
-
-    @Test
+    @Test @Order(3)
     @SuppressWarnings("unused")
     public void testLoggingToLogFileMultiLoggers() throws IOException {
 
@@ -47,7 +50,7 @@ public class LoggerTest {
         TestUtils.assertTextFileLineCount(test3.getLogFile(), 1);
     }
 
-    @Test
+    @Test @Order(4)
     public void testLoggingToLogFileAllLevels() throws IOException {
 
         for (Level logLvl : Level.values()) {
@@ -62,7 +65,7 @@ public class LoggerTest {
         }
     }
 
-    @Test
+    @Test @Order(5)
     public void testReloadLoggingToLogFile() throws IOException {
 
         for (Level logLvl : Level.values()) {
