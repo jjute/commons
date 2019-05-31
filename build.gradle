@@ -19,11 +19,16 @@ repositories {
 
 dependencies {
 
+    // JUnit 5 used for testing
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.5.0-M1'
-
+    
+    // Use this instead of the log4j-api, it's included in here
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.2'
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
 
     // JetBrains Java Annotations
     // https://mvnrepository.com/artifact/org.jetbrains/annotations
@@ -33,6 +38,7 @@ dependencies {
     // https://mvnrepository.com/artifact/javax.validation/validation-api
     compile group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
 
+    // Contains javax annotations
     // https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305
     compile group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
 
@@ -44,11 +50,9 @@ dependencies {
     // https://mvnrepository.com/artifact/org.glassfish/javax.el
     compile group: 'org.glassfish', name: 'javax.el', version: '3.0.0'
 
+    // Spring Framework
     // https://mvnrepository.com/artifact/org.springframework/spring-context
     compile group: 'org.springframework', name: 'spring-context', version: '5.1.7.RELEASE'
-
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
 }
 
 sourceSets {
