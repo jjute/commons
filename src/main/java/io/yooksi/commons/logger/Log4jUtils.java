@@ -105,8 +105,8 @@ public final class Log4jUtils {
     private static <T extends Appender> AppenderData<T> constructAdditiveAppender(AppenderData<T> data,
                                                                                   InitializationPackage<T> ipack) {
 
-        boolean dedicatedFile = data.getType() == AppenderType.FILE && !ipack.logFilePath.equals(
-                getLogFileName(AppenderType.FILE.getTypeClass().cast(data.getAppender())));
+        boolean dedicatedFile = data.getType() == AppenderType.FILE && !ipack.logFilePath.isEmpty() &&
+                !ipack.logFilePath.equals(getLogFilePath(AppenderType.FILE.getTypeClass().cast(data.getAppender())));
 
         InitializationPackage<T> newData = ipack.copyWithLayout(data.getLayout());
         Filter filter = dedicatedFile ? null : createLevelRangeFilter(Level.OFF, data.getLevel(), Filter.Result.DENY);

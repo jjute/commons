@@ -76,9 +76,8 @@ public class LoggerControl {
         AppenderData<?> console = Log4jUtils.getOrSetupAppender(AppenderType.CONSOLE.getBuilder(this).build());
         appenderDataMap.put(AppenderType.CONSOLE, console);
 
-        String path = Log4jUtils.getStandardLogFilePath(!logFilePath.isEmpty() ? logFilePath : logger.getName());
-        InitializationPackage.Builder<?> builder = AppenderType.FILE.getBuilder(this).forFileAppender(console.getLayout(), path);
         appenderDataMap.put(AppenderType.FILE, Log4jUtils.getOrSetupAppender(builder.build()));
+        AppenderData<AbstractOutputStreamAppender> file = Log4jUtils.getOrSetupAppender(builder.build());
 
         return this;
     }

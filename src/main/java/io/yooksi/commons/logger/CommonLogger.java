@@ -32,9 +32,9 @@ public class CommonLogger extends AbsCommonLogger {
      * </ul>
      * @param logLevel console logging level
      */
-    public CommonLogger(String name, Level logLevel, String logFile, Level fileLevel, boolean currentContext, boolean additive) {
+    public CommonLogger(String name, Level logLevel, String logFilePath, Level fileLevel, boolean currentContext, boolean additive) {
 
-        loggerControl = LoggerControl.create(name, logLevel, fileLevel, currentContext, additive).withAppenders(logFile);
+        loggerControl = LoggerControl.create(name, logLevel, fileLevel, currentContext, additive).withAppenders(logFilePath);
         this.logger = loggerControl.getLogger();
 
         loggerControl.update();
@@ -48,15 +48,15 @@ public class CommonLogger extends AbsCommonLogger {
      * @see #CommonLogger(String, Level, String, Level, boolean, boolean)
      */
     public CommonLogger(String logger, Level logLevel, Level logFileLevel, boolean dedicatedFile, boolean currentContext, boolean additive) {
-        this(logger, logLevel, dedicatedFile ? logger : "", logFileLevel, currentContext, additive);
+        this(logger, logLevel, dedicatedFile ? Log4jUtils.getStandardLogFilePath(logger) : "", logFileLevel, currentContext, additive);
     }
 
     public CommonLogger(String logger, Level logLevel, boolean dedicatedFile, boolean currentContext, boolean additive) {
-        this(logger, logLevel, dedicatedFile ? logger : "", logLevel, currentContext, additive);
+        this(logger, logLevel, dedicatedFile ? Log4jUtils.getStandardLogFilePath(logger) : "", logLevel, currentContext, additive);
     }
 
-    public CommonLogger(String logger, Level logLevel, String logFile, boolean currentContext, boolean additive) {
-        this(logger, logLevel, logFile, logLevel, currentContext, additive);
+    public CommonLogger(String logger, Level logLevel, String logFilePath, boolean currentContext, boolean additive) {
+        this(logger, logLevel, logFilePath, logLevel, currentContext, additive);
     }
 
     CommonLogger(String name, boolean clearLogFile) {
