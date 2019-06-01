@@ -70,30 +70,27 @@ public class LoggerControl {
     public static LoggerControl create(String name, Level consoleLevel, Level fileLevel, boolean currentContext, boolean additive) {
         return new LoggerControl(name, new LoggerLevels(Level.ALL, consoleLevel, fileLevel), currentContext, additive);
     }
+    public LoggerControl withAppenders(String logFilePath) {
 
-    public synchronized LoggerControl withAppenders(String logFilePath) {
+        AppenderData<Appender> console = Log4jUtils.getOrSetupAppender(AppenderType.CONSOLE.getBuilder(this).build());
+        registerAppender(AppenderType.CONSOLE, console);
 
-        AppenderData<?> console = Log4jUtils.getOrSetupAppender(AppenderType.CONSOLE.getBuilder(this).build());
-        appenderDataMap.put(AppenderType.CONSOLE, console);
+        InitializationPackage.Builder<AbstractOutputStreamAppender> builder =
+                AppenderType.FILE.getBuilder(this).forFileAppender(console.getLayout(), logFilePath);
 
-        appenderDataMap.put(AppenderType.FILE, Log4jUtils.getOrSetupAppender(builder.build()));
         AppenderData<AbstractOutputStreamAppender> file = Log4jUtils.getOrSetupAppender(builder.build());
+        registerAppender(AppenderType.FILE, file);
 
         return this;
     }
 
-    public void updateFileAppender(String newFilePath) {
+    private synchronized <T extends Appender> void registerAppender(AppenderType<T> type, AppenderData<T> data) {
 
-        AppenderData<AbstractOutputStreamAppender> data = getAppenderData(AppenderType.FILE);
-        final String oldFilePath = data != null ? Log4jUtils.getLogFileName(data.getAppender()) : "";
-
-        if (!oldFilePath.isEmpty() && !newFilePath.equals(oldFilePath))
-        {
-            CommonLogger.LOGGER.debug("Creating dedicated FileAppender for LoggerConfig " + name);
-
-            /*loggerConfig.removeAppender(fileAppender.getAppender().getName());
-            fileAppender = new AppenderData<>(loggerConfig, Log4jUtils.createNewFileAppender(
-                    this, fileAppender.getAppender().getLayout(), logFilePath, true), fileLevel);*/
+        if (data.isLoggerConfig(loggerConfig)) {
+            if (appenderDataMap.containsKey(type)) {
+                CommonLogger.LOGGER.warn("Overriding already registered %s", type.toString());
+            }
+            appenderDataMap.put(type, data);
         }
     }
 
@@ -200,11 +197,6 @@ public class LoggerControl {
     }
     public LoggerConfig getLoggerConfig() {
         return loggerConfig;
-    }
-
-    @SuppressWarnings("unchecked")
-    public @Nullable <T extends Appender> AppenderData<T> getAppenderData(AppenderType<T> type) {
-        return appenderDataMap.get(type);
     }
 
     public String getLogFilePath() {
