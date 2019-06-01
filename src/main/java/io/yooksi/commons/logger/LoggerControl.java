@@ -189,9 +189,6 @@ public class LoggerControl {
     public Level getLevel(LoggerLevels.Type type) {
         return levels.getLevel(type);
     }
-    public LoggerContext getContext() {
-        return context;
-    }
     public Configuration getConfiguration() {
         return config;
     }
