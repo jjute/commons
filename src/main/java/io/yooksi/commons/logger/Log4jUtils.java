@@ -266,7 +266,11 @@ public final class Log4jUtils {
         return null;
     }
 
-    public static String getLogFileName(AbstractOutputStreamAppender appender) {
+    public static String getLogFilePath(AbstractOutputStreamAppender appender) {
+        /*
+         * Contrary to what the method name might imply
+         * FileManager#getFileName returns log file path not name
+         */
         return ((FileManager)appender.getManager()).getFileName();
     }
 }

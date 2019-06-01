@@ -202,6 +202,6 @@ public class LoggerControl {
     public String getLogFilePath() {
 
         AppenderData<AbstractOutputStreamAppender> data = getAppenderData(AppenderType.FILE);
-        return data != null ? Log4jUtils.getLogFileName(data.getAppender()) : "";
+        return data != null ? Log4jUtils.getLogFilePath(data.getAppender()) : "";
     }
 }
