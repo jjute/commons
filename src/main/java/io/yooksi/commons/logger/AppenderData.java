@@ -27,6 +27,9 @@ public class AppenderData<T extends Appender> {
         this.state = LifeCycle.State.STARTED;
         this.level = level != null ? level : Level.ALL;
     }
+    AppenderData(Appender appender, InitializationPackage<T> iPack) {
+        this(iPack.loggerConfig, appender, iPack.type, iPack.level);
+    }
 
     public void setLevel(Level level) {
         this.level = level;

@@ -69,12 +69,20 @@ public final class Log4jUtils {
         AppenderData<T> appenderData = findAppender(loggerConfig, data.type);
         if (appenderData == null)
         {
-            CommonLogger.LOGGER.warn("Unable to find reachable %s in LoggerConfig", data.type.toString());
-            Appender appender = findAppender(config, data.type);
+            CommonLogger.LOGGER.warn("Unable to find reachable %s in LoggerConfig %s",
+                    data.type.toString(), loggerConfig.getName());
 
-            Appender result = appender != null ? initializeAppender(loggerConfig, appender,
-                    data.level, null) : constructAppender(data, null);
+            Appender result = null;
+            Appender configAppender = findAppender(config, data.type);
 
+            if (configAppender != null)
+            {
+                result = data.isDedicatedFileAppender(new AppenderData<T>(configAppender, data)) ?
+                        constructAppender(data.copyWithLayout(configAppender.getLayout()), null) :
+                        initializeAppender(loggerConfig, configAppender, data.level, null);
+            } else {
+                result = constructAppender(data, null);
+            }
             return new AppenderData<>(loggerConfig, result, data.type, data.level);
         }
         else if (appenderData.isLoggerConfig(loggerConfig))
@@ -103,16 +111,13 @@ public final class Log4jUtils {
     }
 
     private static <T extends Appender> AppenderData<T> constructAdditiveAppender(AppenderData<T> data,
-                                                                                  InitializationPackage<T> ipack) {
+                                                                                  InitializationPackage<T> iPack) {
 
-        boolean dedicatedFile = data.getType() == AppenderType.FILE && !ipack.logFilePath.isEmpty() &&
-                !ipack.logFilePath.equals(getLogFilePath(AppenderType.FILE.getTypeClass().cast(data.getAppender())));
-
-        InitializationPackage<T> newData = ipack.copyWithLayout(data.getLayout());
+        final boolean dedicatedFile = iPack.isDedicatedFileAppender(data);
+        InitializationPackage<T> newData = iPack.copyWithLayout(data.getLayout());
         Filter filter = dedicatedFile ? null : createLevelRangeFilter(Level.OFF, data.getLevel(), Filter.Result.DENY);
-        return new AppenderData<>(ipack.loggerConfig, constructAppender(newData, filter), ipack.type, ipack.level);
+        return new AppenderData<>(iPack.loggerConfig, constructAppender(newData, filter), iPack.type, iPack.level);
     }
-
 
     private static LevelRangeFilter createLevelRangeFilter(Level min, Level max, Filter.Result action) {
         return LevelRangeFilter.createFilter(min, max, action, Filter.Result.NEUTRAL);

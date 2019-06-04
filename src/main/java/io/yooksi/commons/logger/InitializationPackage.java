@@ -60,6 +60,12 @@ class InitializationPackage<T extends Appender> {
         names = type.getNames();
     }
 
+    public boolean isDedicatedFileAppender(AppenderData<T> data) {
+
+        return type == AppenderType.FILE && !logFilePath.isEmpty() && !logFilePath.equals(
+                Log4jUtils.getLogFilePath(AppenderType.FILE.getTypeClass().cast(data.getAppender())));
+    }
+
     public InitializationPackage<T> copyWithLayout(Layout<? extends Serializable> layout) {
         return create(loggerControl, type).forFileAppender(layout, logFilePath).build();
     }
