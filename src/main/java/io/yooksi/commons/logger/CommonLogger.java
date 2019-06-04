@@ -12,8 +12,10 @@ public class CommonLogger extends AbsCommonLogger {
 
     private static final LoggerContext CONTEXT = getInternalContext();
 
+    private static boolean isInitializing = true;
+
     /** Used for internal class logging, particularly by the class constructor */
-    static final CommonLogger LOGGER = new CommonLogger("CommonLogger", true);
+    static final CommonLogger LOGGER = new CommonLogger();
 
     private final LoggerControl loggerControl;
     private final Logger logger;
@@ -59,11 +61,21 @@ public class CommonLogger extends AbsCommonLogger {
         this(logger, logLevel, logFilePath, logLevel, currentContext, additive);
     }
 
+    private CommonLogger() {
+
+        this("CommonLogger", true);
+        isInitializing = false;
+    }
+
     CommonLogger(String name, boolean clearLogFile) {
 
-        loggerControl = new LoggerControl(name, Level.ALL, CONTEXT).withAppenders("");
-        logger = loggerControl.getLogger();
+        logger = CONTEXT.getLogger(name);
+        loggerControl = new LoggerControl(name, CONTEXT).withAppenders("");
         if (clearLogFile) clearLogFile();
+    }
+
+    static boolean isInitializing() {
+        return isInitializing;
     }
 
     public Level getLevel(LoggerLevels.Type type) {

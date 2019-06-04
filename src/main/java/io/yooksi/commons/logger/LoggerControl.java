@@ -124,9 +124,10 @@ public class LoggerControl {
 
     private <T extends Appender> void updateAppender(AppenderData<T> data, AppenderType<T> type, Level level, @Nullable Filter filter) {
 
-        CommonLogger.LOGGER.debug("Updating %s %s in LoggerConfig %s to level %s",
-                type.toString(), type.getClass().getSimpleName(), data.getLoggerConfig().getName(), level);
-
+        if (!CommonLogger.isInitializing()) {
+            CommonLogger.LOGGER.debug("Updating %s %s in LoggerConfig %s to level %s",
+                    type.toString(), type.getClass().getSimpleName(), data.getLoggerConfig().getName(), level);
+        }
         loggerConfig.removeAppender(data.getAppender().getName());
         loggerConfig.addAppender(data.getAppender(), level, filter);
 
