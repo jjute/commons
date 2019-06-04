@@ -94,7 +94,7 @@ public class LoggerTest {
 
         logger.printf(logFileLevel, "TRTLF: Printing %s to logfile with CommonLogger at level %s", logFileLevel.name(), level);
 
-        logger.setLogFileLevel(logFileLevel);
+        logger.startLoggingToFile();
 
         logger.printf(logFileLevel, "TRTLF: Printing %s to logfile with CommonLogger at level %s", logFileLevel.name(), level);
 
