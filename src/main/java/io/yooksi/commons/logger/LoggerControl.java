@@ -251,8 +251,11 @@ public class LoggerControl {
      * <p>Adds a registered appender of given type in the current {@code LoggerConfig}.</p>
      * This method is intended to be used after the appender has been programmatically
      * stopped with {@link #stopAppender(AppenderType)}.
+     *
+     * @throws NoSuchElementException when no {@code AppenderData} for the
+     *         given type was found in internal appender registry.
      */
-    public void startAppender(AppenderType type) {
+    public void startAppender(AppenderType type) throws NoSuchElementException {
 
         AppenderData data = appenderDataMap.get(type);
         if (data != null)
@@ -270,7 +273,7 @@ public class LoggerControl {
         }
         else {
             String log = "Unable to start %s in LoggerConfig %s, appender not found in DataMap.";
-            CommonLogger.LOGGER.throwing(new NoSuchElementException(String.format(log, type.toString(), loggerConfig.getName())));
+            throw new NoSuchElementException(String.format(log, type.toString(), loggerConfig.getName()));
         }
     }
 
@@ -278,8 +281,11 @@ public class LoggerControl {
      * <p>Removes a registered appender of given type in the current {@code LoggerConfig}.</p>
      * <p>This will essentially stop any form of logging coming from that appender.</p>
      * If you wish to start the appender again call {@link #startAppender(AppenderType)}.
+     *
+     * @throws NoSuchElementException when no {@code AppenderData} for the
+     *         given type was found in internal appender registry.
      */
-    public void stopAppender(AppenderType type) {
+    public void stopAppender(AppenderType type) throws NoSuchElementException {
 
         AppenderData data = appenderDataMap.get(type);
         if (data != null)
@@ -289,7 +295,7 @@ public class LoggerControl {
         }
         else {
             String log = "Unable to stop %s in LoggerConfig %s, appender not found in DataMap.";
-            CommonLogger.LOGGER.throwing(new NoSuchElementException(String.format(log, type.toString(), loggerConfig.getName())));
+            throw new NoSuchElementException(String.format(log, type.toString(), loggerConfig.getName()));
         }
     }
 
