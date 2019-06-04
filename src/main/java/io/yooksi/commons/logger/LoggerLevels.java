@@ -27,9 +27,6 @@ public class LoggerLevels {
         levels[Type.CONSOLE.i] = console;
         levels[Type.FILE.i] = file;
     }
-    public LoggerLevels(Level level) {
-        this(level, level, level);
-    }
 
     public Level getLevel(AppenderType type) {
         return levels[type.getLevelType().i];
