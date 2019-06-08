@@ -278,7 +278,7 @@ public class LoggerControl {
     }
 
     /**
-     * <p>Removes a registered appender of given type in the current {@code LoggerConfig}.</p>
+     * <p>Removes a registered appender of given type from the current {@code LoggerConfig}.</p>
      * <p>This will essentially stop any form of logging coming from that appender.</p>
      * If you wish to start the appender again call {@link #startAppender(AppenderType)}.
      *
@@ -308,6 +308,16 @@ public class LoggerControl {
         context.updateLoggers();
     }
 
+    /**
+     * @return relative path of the log file used by file appender or an empty
+     *         {@code String} if no file appender is registered with this control.
+     */
+    public String getLogFilePath() {
+
+        AppenderData<AbstractOutputStreamAppender> data = getAppenderData(AppenderType.FILE);
+        return data != null ? Log4jUtils.getLogFilePath(data.getAppender()) : "";
+    }
+
     public String getName() {
         return name;
     }
@@ -322,11 +332,5 @@ public class LoggerControl {
     }
     public LoggerConfig getLoggerConfig() {
         return loggerConfig;
-    }
-
-    public String getLogFilePath() {
-
-        AppenderData<AbstractOutputStreamAppender> data = getAppenderData(AppenderType.FILE);
-        return data != null ? Log4jUtils.getLogFilePath(data.getAppender()) : "";
     }
 }
