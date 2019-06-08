@@ -134,7 +134,7 @@ public final class Log4jUtils {
             return (T) createNewConsoleAppender(data.loggerConfig, data.level, data.layout, filter, true);
         }
         else {
-            String log = "Fatal error occured while constructing %s. Construction for that type is not supported.";
+            String log = "Fatal error occurred while constructing %s. Construction for that type is not supported.";
             throw new NoClassDefFoundError(String.format(log, data.type.toString()));
         }
     }
