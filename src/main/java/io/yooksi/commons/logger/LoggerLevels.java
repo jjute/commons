@@ -2,6 +2,7 @@ package io.yooksi.commons.logger;
 
 import org.apache.logging.log4j.Level;
 
+@SuppressWarnings("unused")
 public class LoggerLevels {
 
     public enum Type {

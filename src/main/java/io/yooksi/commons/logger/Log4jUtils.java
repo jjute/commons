@@ -18,7 +18,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @MethodsNotNull
-@SuppressWarnings({"WeakerAccess"})
+@SuppressWarnings({"unused", "WeakerAccess"})
 public final class Log4jUtils {
 
     /* Make the constructor private to disable instantiation */
@@ -119,6 +119,7 @@ public final class Log4jUtils {
         return new AppenderData<>(iPack.loggerConfig, constructAppender(newData, filter), iPack.type, iPack.level);
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static LevelRangeFilter createLevelRangeFilter(Level min, Level max, Filter.Result action) {
         return LevelRangeFilter.createFilter(min, max, action, Filter.Result.NEUTRAL);
     }

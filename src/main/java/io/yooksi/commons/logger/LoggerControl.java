@@ -17,7 +17,7 @@ import java.util.NoSuchElementException;
 import static io.yooksi.commons.logger.LoggerLevels.Type;
 
 @MethodsNotNull
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class LoggerControl {
 
     /**

@@ -21,7 +21,7 @@ import java.io.Serializable;
  * @see org.apache.logging.log4j.core.config.AppenderControlArraySet
  */
 @MethodsNotNull
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class AppenderData<T extends Appender> {
 
     private final LoggerConfig loggerConfig;
