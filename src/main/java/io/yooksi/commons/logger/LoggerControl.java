@@ -263,8 +263,11 @@ public class LoggerControl {
             Appender appender = data.getAppender();
             if (!loggerConfig.getAppenders().containsKey(appender.getName()))
             {
-                loggerConfig.addAppender(appender, data.getLevel(), null);
-                data.setState(LifeCycle.State.STARTED);
+                if (data.getState() != LifeCycle.State.STARTED) {
+                    loggerConfig.addAppender(appender, data.getLevel(), null);
+                    data.setState(LifeCycle.State.STARTED);
+                }
+                else CommonLogger.LOGGER.warn("Tried to start appender that is marked as STARTED");
             }
             else {
                 String log = "Unable to start %s, appender already exists in LoggerConfig %s";
@@ -290,8 +293,11 @@ public class LoggerControl {
         AppenderData data = appenderDataMap.get(type);
         if (data != null)
         {
-            loggerConfig.removeAppender(data.getAppender().getName());
-            data.setState(LifeCycle.State.STOPPED);
+            if (data.getState() != LifeCycle.State.STOPPED) {
+                loggerConfig.removeAppender(data.getAppender().getName());
+                data.setState(LifeCycle.State.STOPPED);
+            }
+            else CommonLogger.LOGGER.warn("Tried to stop appender that is marked as STOPPED");
         }
         else {
             String log = "Unable to stop %s in LoggerConfig %s, appender not found in DataMap.";
