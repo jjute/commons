@@ -21,7 +21,6 @@ class InitializationPackage<T extends Appender> {
     final LoggerConfig loggerConfig;
 
     final AppenderType<T> type;
-    final String[] names;
     final Level level;
 
     final Layout<? extends Serializable> layout;
@@ -64,7 +63,6 @@ class InitializationPackage<T extends Appender> {
 
         loggerControl = control;
         loggerConfig = control.getLoggerConfig();
-        names = type.getNames();
     }
 
     /**

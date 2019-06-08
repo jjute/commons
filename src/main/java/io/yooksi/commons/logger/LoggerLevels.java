@@ -13,7 +13,7 @@ public class LoggerLevels {
         Type(int i) { this.i = i; }
     }
 
-    private Level[] levels = new Level[Type.values().length];
+    private final Level[] levels = new Level[Type.values().length];
 
     public LoggerLevels(Level logger, Level console, Level file) {
 

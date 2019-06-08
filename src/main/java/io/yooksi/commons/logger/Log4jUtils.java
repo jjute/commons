@@ -72,12 +72,12 @@ public final class Log4jUtils {
             CommonLogger.LOGGER.warn("Unable to find reachable %s in LoggerConfig %s",
                     data.type.toString(), loggerConfig.getName());
 
-            Appender result = null;
+            Appender result;
             Appender configAppender = findAppender(config, data.type);
 
             if (configAppender != null)
             {
-                result = data.isDedicatedFileAppender(new AppenderData<T>(configAppender, data)) ?
+                result = data.isDedicatedFileAppender(new AppenderData<>(configAppender, data)) ?
                         constructAppender(data.copyWithLayout(configAppender.getLayout()), null) :
                         initializeAppender(loggerConfig, configAppender, data.level, null);
             } else {
