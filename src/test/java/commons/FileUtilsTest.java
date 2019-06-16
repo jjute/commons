@@ -27,6 +27,7 @@ public class FileUtilsTest {
 
         System.out.printf("Created %d files for this test%n", result.size());
         result.forEach(p -> System.out.printf("Path: %s%n", p.toString()));
+        org.apache.commons.io.FileUtils.deleteDirectory(path.toFile());
     }
 
     @Test
@@ -50,6 +51,8 @@ public class FileUtilsTest {
         System.out.printf("Created %d and excluded %d files for this test%n", createdFiles.size(), filesExcluded);
         createdFiles.forEach(p -> System.out.printf("Path: %s%s%n", p.toString(),
                 excludeSet.contains(p.getFileName().toString()) ? " -- EXCLUDED" : ""));
+
+        org.apache.commons.io.FileUtils.deleteDirectory(path.toFile());
     }
 
     /**
