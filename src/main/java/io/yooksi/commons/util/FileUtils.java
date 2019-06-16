@@ -20,25 +20,24 @@ public class FileUtils {
 
     public static Set<Path> getDirectoryTree(Path dir, boolean relativize, String...excludeFiles) throws IOException {
 
-        final Path[] pIgnoreList = joinPaths(dir, excludeFiles);
+        Path[] pIgnoreList = joinPaths(dir, excludeFiles);
         Set<Path> ignoreSet = new java.util.HashSet<>(Arrays.asList(pIgnoreList));
 
         Set<Path> dirTree = ignoreSet.isEmpty() ?
                 Files.walk(dir).filter(p -> Files.isRegularFile(p)).collect(Collectors.toSet()) :
-                Files.walk(dir).filter(p -> Files.isRegularFile(p) && !isPathRelative(p, ignoreSet)).collect(Collectors.toSet());
+                Files.walk(dir).filter(p -> Files.isRegularFile(p) && !doesPathMatch(p, ignoreSet)).collect(Collectors.toSet());
 
         return relativize ? relativizePathTree(dir, dirTree) : dirTree;
     }
 
-    private static boolean isPathRelative(Path path, Set<Path> collection) {
+    public static boolean doesPathMatch(Path path, Set<Path> collection) {
 
         for (Path entry : collection)
         {
-            String filename = entry.getFileName().toString();
-            boolean isDirectory = FilenameUtils.getExtension(filename).isEmpty();
-            boolean matchesFile = !isDirectory && path.getFileName().toString().equals(filename);
+            boolean matches = path.getFileName().equals(entry.getFileName());
+            boolean contains = !matches && path.toAbsolutePath().startsWith(entry.toAbsolutePath());
 
-            if (matchesFile || path.startsWith(entry))  {
+            if (matches || contains)  {
                 return true;
             }
         }
