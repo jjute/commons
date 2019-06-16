@@ -17,6 +17,24 @@ public class FileUtilsTest {
     private static final java.util.Random RAND = new java.util.Random();
 
     @Test
+    public void testPathExclusion() {
+
+        Path path = Paths.get("foo\\bar\\test");
+
+        testPathExclusion(path, true, "test", "path", "should", "match");
+        testPathExclusion(path, false, "path", "does", "NOT", "match");
+        testPathExclusion(path, true, "path", "starts", "with", "foo\\bar");
+        testPathExclusion(path, true, "path", "starts", "foo", "with", "bar");
+    }
+
+    private void testPathExclusion(Path path, boolean expectation, String...exclude) {
+
+        Set<Path> excludeSet = new java.util.HashSet<>();
+        java.util.Arrays.stream(exclude).forEach(p -> excludeSet.add(Paths.get(p)));
+        Assertions.assertEquals(expectation, FileUtils.doesPathMatch(path, excludeSet));
+    }
+
+    @Test
     public void getDirectoryTreeTest() throws IOException {
 
         Path path = ROOT_PATH.resolve("testDir");
