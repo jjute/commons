@@ -1,5 +1,6 @@
 package io.yooksi.commons.util;
 
+import io.yooksi.commons.define.MethodsNotNull;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -13,6 +14,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@MethodsNotNull
+@SuppressWarnings("unused")
 public class FileUtils {
 
     public static Set<Path> getDirectoryTree(Path dir, boolean relativize, String...excludeFiles) throws IOException {
