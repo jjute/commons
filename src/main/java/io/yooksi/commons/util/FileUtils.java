@@ -16,7 +16,7 @@ import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 @MethodsNotNull
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class FileUtils {
 
     /**
