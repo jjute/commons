@@ -157,7 +157,7 @@ public class FileUtils {
      */
     public static java.io.File[] getFilesInDirectory(Path dir, String extRegex) throws NotDirectoryException,
                                                                                 PatternSyntaxException, IOException {
-        if (dir.toFile().isDirectory()) {
+        if (!dir.toFile().isDirectory()) {
             String log = "Path \"%s\" does not point to a valid directory.";
             throw new NotDirectoryException(String.format(log, dir.toString()));
         }
@@ -185,7 +185,6 @@ public class FileUtils {
     public static java.io.File[] getTextFilesInDirectory(Path dir) throws NotDirectoryException, IOException {
         return getFilesInDirectory(dir, "txt");
     }
-
 
     /**
      * Trim leading whitespaces from each line of a text based file.
