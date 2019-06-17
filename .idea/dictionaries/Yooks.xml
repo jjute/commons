@@ -6,6 +6,7 @@
       <w>appenders</w>
       <w>ctrls</w>
       <w>dbnavigator</w>
+      <w>filenames</w>
       <w>glassfish</w>
       <w>intelli</w>
       <w>jcenter</w>
@@ -13,6 +14,9 @@
       <w>nullness</w>
       <w>printf</w>
       <w>proxied</w>
+      <w>relativize</w>
+      <w>relativized</w>
+      <w>relativizing</w>
       <w>springframework</w>
       <w>ykcommons</w>
     </words>
