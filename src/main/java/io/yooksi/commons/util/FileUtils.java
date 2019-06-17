@@ -32,10 +32,11 @@ public class FileUtils {
 
     public static boolean doesPathMatch(Path path, Set<Path> collection) {
 
+        path = convertToRelativePath(path);
         for (Path entry : collection)
         {
             boolean matches = path.getFileName().equals(entry.getFileName());
-            boolean contains = !matches && path.toAbsolutePath().startsWith(entry.toAbsolutePath());
+            boolean contains = !matches && path.startsWith(entry);
 
             if (matches || contains)  {
                 return true;
@@ -45,6 +46,20 @@ public class FileUtils {
     }
 
     public static Path[] joinPaths(Path root, String[] paths) {
+    /**
+     * Remove the root component of the given absolute {@code Path} and
+     * return the new relative path. If the given path does not contain
+     * a root component then the same path object will be returned.
+     *
+     * @return relative representation of the given path or the same
+     *         path object passed as method argument if the given path
+     *         does not have a root component.
+     */
+    public static Path convertToRelativePath(Path path) {
+
+        Path root = path.getRoot();
+        return root != null ? root.relativize(path) : path;
+    }
 
         Path[] joined = new Path[paths.length];
         for (int i = 0; i < paths.length; i++) {
