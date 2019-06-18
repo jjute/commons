@@ -2,7 +2,7 @@ package io.yooksi.commons.git;
 
 import javax.validation.constraints.NotEmpty;
 
-public class SimpleCLOption extends GitCLOption {
+public abstract class SimpleCLOption implements GitCLOption {
 
     private final String option;
 

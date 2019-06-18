@@ -6,7 +6,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import javax.validation.constraints.NotEmpty;
 import java.util.Arrays;
 
-public class ParamCLOption extends GitCLOption {
+public abstract class ParamCLOption implements GitCLOption {
 
     private final Pair<String, String> data;
     private final String option;
