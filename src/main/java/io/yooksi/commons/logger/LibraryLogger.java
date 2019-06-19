@@ -54,6 +54,9 @@ public final class LibraryLogger {
     public static void warn(String log) {
         logger.warn(log);
     }
+    public static void warn(String format, Object...params) {
+        logger.printf(Level.WARN, format, params);
+    }
     public static void debug(String log) {
         logger.debug(log);
     }
