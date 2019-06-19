@@ -10,6 +10,142 @@ import java.lang.reflect.Array;
 public class ArrayUtils extends org.apache.commons.lang3.ArrayUtils {
 
     /**
+     * Expand the array forward for one slot and insert the given element
+     * to the beginning of the array so that the corresponding index of the
+     * element inside that array is 0.
+     *
+     * @param element object to prepend
+     * @param array the array to process
+     * @param <T> array component type
+     * @return a new <i>processed</i> copy of the given array
+     */
+    public static <T> T[] prepend(T element, T[] array) {
+
+        T[] result = expandArray(array, 1, 0);
+        result[0] = element; return result;
+    }
+
+    /**
+     * Expand the array forward for one slot and insert the given element
+     * to the beginning of the array so that the corresponding index of the
+     * element inside that array is 0.
+     *
+     * @param element object to prepend
+     * @param array the array to process
+     * @return a new <i>processed</i> copy of the given array
+     */
+    public static byte[] prepend(byte element, byte[] array) {
+
+        byte[] result = expandArray(array, 1, 0);
+        result[0] = element; return result;
+    }
+
+    /**
+     * Expand the array forward for one slot and insert the given element
+     * to the beginning of the array so that the corresponding index of the
+     * element inside that array is 0.
+     *
+     * @param element object to prepend
+     * @param array the array to process
+     * @return a new <i>processed</i> copy of the given array
+     */
+    public static short[] prepend(short element, short[] array) {
+
+        short[] result = expandArray(array, 1, 0);
+        result[0] = element; return result;
+    }
+
+    /**
+     * Expand the array forward for one slot and insert the given element
+     * to the beginning of the array so that the corresponding index of the
+     * element inside that array is 0.
+     *
+     * @param element object to prepend
+     * @param array the array to process
+     * @return a new <i>processed</i> copy of the given array
+     */
+    public static int[] prepend(int element, int[] array) {
+
+        int[] result = expandArray(array, 1, 0);
+        result[0] = element; return result;
+    }
+
+    /**
+     * Expand the array forward for one slot and insert the given element
+     * to the beginning of the array so that the corresponding index of the
+     * element inside that array is 0.
+     *
+     * @param element object to prepend
+     * @param array the array to process
+     * @return a new <i>processed</i> copy of the given array
+     */
+    public static long[] prepend(long element, long[] array) {
+
+        long[] result = expandArray(array, 1, 0);
+        result[0] = element; return result;
+    }
+
+    /**
+     * Expand the array forward for one slot and insert the given element
+     * to the beginning of the array so that the corresponding index of the
+     * element inside that array is 0.
+     *
+     * @param element object to prepend
+     * @param array the array to process
+     * @return a new <i>processed</i> copy of the given array
+     */
+    public static float[] prepend(float element, float[] array) {
+
+        float[] result = expandArray(array, 1, 0);
+        result[0] = element; return result;
+    }
+
+    /**
+     * Expand the array forward for one slot and insert the given element
+     * to the beginning of the array so that the corresponding index of the
+     * element inside that array is 0.
+     *
+     * @param element object to prepend
+     * @param array the array to process
+     * @return a new <i>processed</i> copy of the given array
+     */
+    public static double[] prepend(double element, double[] array) {
+
+        double[] result = expandArray(array, 1, 0);
+        result[0] = element; return result;
+    }
+
+    /**
+     * Expand the array forward for one slot and insert the given element
+     * to the beginning of the array so that the corresponding index of the
+     * element inside that array is 0.
+     *
+     * @param element object to prepend
+     * @param array the array to process
+     * @return a new <i>processed</i> copy of the given array
+     */
+    public static boolean[] prepend(boolean element, boolean[] array) {
+
+        boolean[] result = expandArray(array, 1, 0);
+        result[0] = element; return result;
+    }
+
+    /**
+     * Expand the array forward for one slot and insert the given element
+     * to the beginning of the array so that the corresponding index of the
+     * element inside that array is 0.
+     *
+     * @param element object to prepend
+     * @param array the array to process
+     * @return a new <i>processed</i> copy of the given array
+     */
+    public static char[] prepend(char element, char[] array) {
+
+        char[] result = expandArray(array, 1, 0);
+        result[0] = element; return result;
+    }
+
+    /**
      * Copies the content of a given array into an index range of a new array of the
      * same type so that the copied array becomes a sub-array of the newly created array.
      * The index range is determined by second and third method parameters to start from

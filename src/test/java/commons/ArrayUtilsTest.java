@@ -4,7 +4,22 @@ import io.yooksi.commons.util.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import javax.validation.constraints.AssertTrue;
+
 public class ArrayUtilsTest {
+
+    @Test
+    public void prependArrayTest() {
+
+        Integer[] refArray = ArrayUtils.prepend(1, new Integer[] { 2, 3 });
+        Assertions.assertEquals(1, refArray[0]);
+
+        byte[] primitiveArray = ArrayUtils.prepend((byte) 1, new byte[] { 2, 3 });
+        Assertions.assertEquals(1, primitiveArray[0]);
+
+        Boolean[] emptyFirstArray = ArrayUtils.prepend(null, new Boolean[] { true, false });
+        Assertions.assertNull(emptyFirstArray[0]);
+    }
 
     @Test
     public void expandArrayForwardTest() {
