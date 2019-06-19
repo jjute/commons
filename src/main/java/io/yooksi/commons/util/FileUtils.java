@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @MethodsNotNull
 @SuppressWarnings({"unused", "WeakerAccess"})
-public class FileUtils {
+public class FileUtils extends org.apache.commons.io.FileUtils {
 
     /**
      * Construct and return a {@code Set} populated with {@code Path} objects
@@ -193,14 +193,14 @@ public class FileUtils {
      * @param file {@code File} object to process
      * @throws IOException if an I/O error occurred while reading or writing to file
      *
-     * @see org.apache.commons.io.FileUtils#readLines(File, String)
-     * @see org.apache.commons.io.FileUtils#writeLines(File, Collection)
+     * @see #readLines(File, String)
+     * @see #writeLines(File, Collection)
      */
     public static void trimTrailingSpaceFromTextFile(java.io.File file) throws IOException {
 
         java.util.List<String> newLines = new java.util.ArrayList<>();
         java.util.List<String> lines = org.apache.commons.io.FileUtils.readLines(file, Charset.defaultCharset());
         lines.forEach(l -> newLines.add(l.replaceAll("[\\t\\s]+$", "")));
-        org.apache.commons.io.FileUtils.writeLines(file, newLines);
+        FileUtils.writeLines(file, newLines);
     }
 }
