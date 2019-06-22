@@ -1,7 +1,7 @@
 package io.yooksi.commons.util;
 
 import io.yooksi.commons.define.MethodsNotNull;
-import io.yooksi.commons.define.RegexPatterns;
+import io.yooksi.commons.define.RegExPatterns;
 
 @MethodsNotNull
 @SuppressWarnings("WeakerAccess")
@@ -15,7 +15,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
      * @see System#lineSeparator()
      */
     public static String normalizeEOL(String text) {
-        return RegExUtils.replaceAll(text, RegexPatterns.LINE_SEPARATOR, System.lineSeparator());
+        return RegExUtils.replaceAll(text, RegExPatterns.LINE_SEPARATORS, System.lineSeparator());
     }
 
     /**
