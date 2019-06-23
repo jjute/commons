@@ -5,6 +5,8 @@ import javax.validation.constraints.NotEmpty;
 
 public interface GitCLOption {
 
+    GitCLOption[] NONE = null;
+
     @Contract(pure = true)
     @NotEmpty String getDesignation();
 
