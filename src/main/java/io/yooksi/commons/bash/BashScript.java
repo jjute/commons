@@ -105,22 +105,11 @@ public class BashScript {
          */
         private Builder appendCmd(String cmd, String... args) {
 
-            if (command.length() == 0) {
+            if (command.length() > 0) {
                 resetCommand();
             }
             command.append(cmd);
             return appendArgs(args);
-        }
-        /**
-         * Append the given arguments to the current command,
-         * separating the command and each argument with a single whitespace.
-         */
-        private Builder appendArgs(String...args) {
-
-            for (String arg : args) {
-                command.append(' ').append(arg);
-            }
-            return this;
         }
         /**
          * Construct the current command from the given parameters and close
@@ -134,7 +123,7 @@ public class BashScript {
         @SuppressWarnings("SameParameterValue")
         private Builder appendQuoted(String cmd, String... args) {
 
-            if (command.length() == 0) {
+            if (command.length() > 0) {
                 resetCommand();
             }
             command.append(cmd).append(' ').append('\"');
@@ -142,6 +131,17 @@ public class BashScript {
                 command.append(arg).append(' ');
             }
             command.setCharAt(command.length() - 1, '\"');
+            return this;
+        }
+        /**
+         * Append the given arguments to the current command,
+         * separating the command and each argument with a single whitespace.
+         */
+        private Builder appendArgs(String...args) {
+
+            for (String arg : args) {
+                command.append(' ').append(arg);
+            }
             return this;
         }
 
