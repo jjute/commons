@@ -4,12 +4,7 @@ import io.yooksi.commons.bash.UnixPath;
 import io.yooksi.commons.define.MethodsNotNull;
 import io.yooksi.commons.logger.LibraryLogger;
 
-import org.eclipse.jgit.api.StashListCommand;
-import org.eclipse.jgit.api.StashApplyCommand;
-import org.eclipse.jgit.api.AddCommand;
-import org.eclipse.jgit.api.CheckoutCommand;
-import org.eclipse.jgit.api.CommitCommand;
-import org.eclipse.jgit.api.StashCreateCommand;
+import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
