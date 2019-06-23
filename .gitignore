@@ -29,6 +29,9 @@ build
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
+# Other IDEA stuff
+.idea/CodeStyles
+
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
