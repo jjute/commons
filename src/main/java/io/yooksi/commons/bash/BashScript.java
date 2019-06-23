@@ -2,11 +2,13 @@ package io.yooksi.commons.bash;
 
 import io.yooksi.commons.define.IBuilder;
 import io.yooksi.commons.define.MethodsNotNull;
+import io.yooksi.commons.util.ArrayUtils;
 import io.yooksi.commons.util.FileUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -96,9 +98,28 @@ public class BashScript {
         }
 
         /**
-         * Construct the current command from the given parameters. Note that this method
-         * will overwrite the current command if it is not called as the first element
-         * in the chain for every command being constructed.
+         * <p>Append a single {@code BashCommand} to this script.</p>
+         * <i>Note that this process will reset the current command.</i>
+         */
+        public Builder appendCmd(BashCommand cmd) {
+            return next().appendCmd(cmd.toString());
+        }
+        /**
+         * <p>Append multiple bash commands to this script.</p>
+         * <i>Note that this process will reset the current command.</i>
+         */
+        public Builder appendCmds(BashCommand cmd, BashCommand... more) {
+
+            Arrays.stream(ArrayUtils.prepend(cmd, more)).forEach(this::appendCmd);
+            return next();
+        }
+
+        /**
+         * Construct the current command from the given parameters.
+         * <p><i>
+         *     Note that this method will overwrite the current command if it is not
+         *     called as the first element in the chain for every command being constructed.
+         * </i></p>
          *
          * @param cmd first string to append to the current command
          * @param args array of strings to append in natural order
