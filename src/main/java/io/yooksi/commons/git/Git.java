@@ -20,6 +20,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.eclipse.jgit.lib.RefDatabase;
+import org.eclipse.jgit.util.FileUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -86,7 +87,46 @@ public class Git extends org.eclipse.jgit.api.Git {
             String log = "Unable to find Git repository under path \"%s\"";
             throw new FileNotFoundException(String.format(log, repoPath.toString()));
         }
-        else return (Git) org.eclipse.jgit.api.Git.open(repo);
+        else return new Git(org.eclipse.jgit.api.Git.open(repo).getRepository());
+    }
+
+    /**
+     * <p>Create an empty git repository or reinitialize an existing one.</p>
+     * <p>
+     *     This command creates an empty Git repository - basically a {@code .git} directory
+     *     with subdirectories for {@code objects, refs/heads, refs/tags}, and template files.
+     *     An initial {@code HEAD} file that references the {@code HEAD}
+     *     of the master branch is also created.
+     * </p>
+     *     Running <i>git init</i> in an existing repository is safe.
+     *     It will not overwrite things that are already there.
+     *     The primary reason for rerunning <i>git init</i> is to pick up newly added templates
+     *     (or to move the repository to another place if --separate-git-dir is given).
+     * </p>
+     * @param rootDirPath {@code Path} to the directory we want to initialize our repository in.
+     *                    Note that path can <i>(but should not)</i> point to the repository meta
+     *                    directory ({@code .git}) in which case a warning will be logged.
+     *
+     * @return an instance of the (re)initialized repository
+     * @throws GitAPIException if an exception occurred while executing {@link InitCommand#call()}.
+     * @see Git#init()
+     */
+    public static Git initRepository(Path rootDirPath) throws IOException, GitAPIException {
+
+        File rootDir = rootDirPath.toFile();
+        InitCommand command;
+
+        if (!rootDir.getName().equals(".git")) {
+            command = Git.init().setDirectory(rootDir);
+        }
+        else {
+            LibraryLogger.warn("Tried to initialize a repository inside a recursive directory (.git\\.git).");
+            command = Git.init().setGitDir(rootDir);
+        }
+        if (!rootDir.exists()) {
+            FileUtils.mkdirs(rootDir);
+        }
+        return new Git(command.call().getRepository());
     }
 
     /**
