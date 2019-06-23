@@ -20,6 +20,30 @@ import java.util.stream.Collectors;
 public class FileUtils extends org.apache.commons.io.FileUtils {
 
     /**
+     * Returns a {@link File} in a system temporary directory.
+     * Note that this method does not create a new file nor does it
+     * guarantee that the file in question exists on local disk.
+     *
+     * @param filename name of the file
+     * @return file in a system temporary directory
+     */
+    public static File getTempFile(String filename) {
+        return new File(getTempDirectory().toPath().resolve(filename).toString());
+    }
+
+    /**
+     * Returns the path to a file in a system temporary directory.
+     * Note that this method does not create a new file nor does it
+     * guarantee that the file in question exists on local disk.
+     *
+     * @param filename name of the file
+     * @return path to a file in a system temporary directory
+     */
+    public static Path getTempFilePath(String filename) {
+        return getTempDirectory().toPath().resolve(filename);
+    }
+
+    /**
      * Construct and return a {@code Set} populated with {@code Path} objects
      * that represent files from all directory levels of a given path,
      * optionally excluding files with given filenames.
