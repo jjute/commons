@@ -1,7 +1,11 @@
 package io.yooksi.commons.git;
 
+import io.yooksi.commons.define.MethodsNotNull;
+
 import javax.validation.constraints.NotEmpty;
 
+@MethodsNotNull
+@SuppressWarnings("WeakerAccess")
 public abstract class SimpleCLOption implements GitCLOption {
 
     private final String option;

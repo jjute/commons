@@ -1,9 +1,10 @@
 package io.yooksi.commons.git;
 
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class BasicCLOption extends SimpleCLOption {
 
-    public static BasicCLOption VERSION = new BasicCLOption("--version");
-    public static BasicCLOption HELP = new BasicCLOption("--help");
+    public static final BasicCLOption VERSION = new BasicCLOption("--version");
+    public static final BasicCLOption HELP = new BasicCLOption("--help");
 
     public BasicCLOption(String value) {
         super(value);

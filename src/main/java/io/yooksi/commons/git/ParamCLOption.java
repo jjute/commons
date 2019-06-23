@@ -11,6 +11,7 @@ public abstract class ParamCLOption implements GitCLOption {
     private final Pair<String, String> data;
     private final String option;
 
+    @SuppressWarnings("SameParameterValue")
     ParamCLOption(String format, String param, String...more) throws IllegalArgumentException {
 
         String[] params = ArrayUtils.addAll(new String[] { param }, more);

@@ -5,9 +5,10 @@ import org.jetbrains.annotations.Contract;
 
 import java.util.Arrays;
 
+@SuppressWarnings("unused")
 public class GitCommand extends BashCommand {
 
-    public static GitCommand VERSION = new GitCommand(BasicCLOption.VERSION.toString());
+    public static final GitCommand VERSION = new GitCommand(BasicCLOption.VERSION.toString());
 
     private final GitCLOption[] options;
 

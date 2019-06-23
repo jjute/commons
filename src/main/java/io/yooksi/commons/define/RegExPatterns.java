@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
  * This class contains compiled regex patterns for general use.
  * @see io.yooksi.commons.util.RegExUtils
  */
+@SuppressWarnings("unused")
 public class RegExPatterns {
 
     /**

@@ -45,7 +45,7 @@ public class DiffFilterOption extends ParamCLOption {
     public static final DiffFilterOption BROKEN = new DiffFilterOption(Type.BROKEN);
 
     /**
-     * Internal data storage containing option types mapped to a  boolean value that
+     * Internal data storage containing option types mapped to a boolean value that
      * designates types as either inclusive ({@code true}) or exclusive ({@code false}).
      */
     private final Map<Type, Boolean> map = new java.util.HashMap<>();
@@ -65,7 +65,7 @@ public class DiffFilterOption extends ParamCLOption {
      */
     public static class Builder implements IBuilder<DiffFilterOption> {
 
-        private Map<Type, Boolean> map = new java.util.HashMap<>();
+        private final Map<Type, Boolean> map = new java.util.HashMap<>();
         private boolean allOrNone = false;
         /**
          * Designate types of files to include in a diff.

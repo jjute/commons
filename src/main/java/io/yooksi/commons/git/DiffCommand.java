@@ -10,6 +10,7 @@ import java.nio.file.Path;
  * changes between the index and a tree, changes between two trees,
  * changes between two blob objects, or changes between two files on disk.
  */
+@SuppressWarnings("unused")
 public class DiffCommand extends GitCommand {
 
     private static final String FORMAT = "diff %opts ";
@@ -50,7 +51,6 @@ public class DiffCommand extends GitCommand {
      * When ready use {@link #build()} method to build a new {@code DiffCommand} instance.
      */
     public static class Builder implements IBuilder<DiffCommand> {
-
 
         @Override
         public DiffCommand build() {

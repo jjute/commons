@@ -1,6 +1,5 @@
 package io.yooksi.commons.bash;
 
-import io.yooksi.commons.util.StringUtils;
 import io.yooksi.commons.git.GitCommand;
 
 /**

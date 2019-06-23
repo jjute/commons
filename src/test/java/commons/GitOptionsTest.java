@@ -4,6 +4,7 @@ import io.yooksi.commons.git.DiffFilterOption;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("WeakerAccess")
 public class GitOptionsTest {
 
     @Test
