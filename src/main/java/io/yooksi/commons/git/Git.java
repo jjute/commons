@@ -64,7 +64,7 @@ public class Git extends org.eclipse.jgit.api.Git {
     public static Git openRepository() {
 
         try {
-            return (Git) org.eclipse.jgit.api.Git.open(new File(".git"));
+            return new Git(open(new File(".git")).getRepository());
         }
         catch (IOException e) {
             throw new IllegalStateException("Unable to open git repository in root directory", e);
