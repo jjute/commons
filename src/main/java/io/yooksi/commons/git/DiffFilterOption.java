@@ -59,9 +59,9 @@ public class DiffFilterOption extends ParamCLOption {
 
     /**
      * Use {@link #create()} method to create a new {@code Builder} instance,
-     * then chain call  available class methods to configure the object.
-     * When ready use {@link #build()} method to build a new instance
-     * of {@code DiffFilterOption}.
+     * then chain call available class methods to configure the object.
+     * When all configurations have been setup use {@link #build()}
+     * method to build a new {@code DiffFilterOption} instance.
      */
     public static class Builder implements IBuilder<DiffFilterOption> {
 

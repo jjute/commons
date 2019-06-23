@@ -12,12 +12,6 @@ import java.nio.file.Path;
  */
 public class DiffCommand extends GitCommand {
 
-//    git diff [<options>] [<commit>] [--] [<path>…​]
-//    git diff [<options>] --cached [<commit>] [--] [<path>…​]
-//    git diff [<options>] <commit> <commit> [--] [<path>…​]
-//    git diff [<options>] <blob> <blob>
-//    git diff [<options>] --no-index [--] <path> <path>
-
     private static final String FORMAT = "diff %opts ";
 
     private DiffCommand(String[] args, GitCLOption... options) {
@@ -40,14 +34,11 @@ public class DiffCommand extends GitCommand {
     }
 
     /**
-     * compare the given two paths on the filesystem. You can omit the {@code noIndex} option when
+     * Compare the given two paths on the filesystem. You can omit the {@code noIndex} option when
      * running the command in a working tree controlled by Git and at least one of the paths points
      * outside the working tree, or when running the command outside a working tree controlled by Git.
      *
-     * @param path1
-     * @param path2
-     * @param noIndex
-     * @return
+     * @param noIndex whether to include non-indexed files
      */
     public static DiffCommand comparePaths(Path path1, Path path2, boolean noIndex) {
          return new DiffCommand(noIndex ? "--no-index" : "", path1.toString(), path2.toString());
@@ -56,8 +47,7 @@ public class DiffCommand extends GitCommand {
     /**
      * Use {@link #create()} method to create a new {@code Builder} instance,
      * then chain call available class methods to configure the object.
-     * When ready use {@link #build()} method to build a new instance
-     * of {@code DiffCommand}.
+     * When ready use {@link #build()} method to build a new {@code DiffCommand} instance.
      */
     public static class Builder implements IBuilder<DiffCommand> {
 

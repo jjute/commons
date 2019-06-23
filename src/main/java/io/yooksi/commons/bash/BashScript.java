@@ -90,7 +90,10 @@ public class BashScript {
         }
 
         /**
-         * Redirect the current command to a file.
+         * Redirect the current command to a file. Note that this method will have
+         * no effect if it's not called on an active command. In other words it will
+         * do nothing if the {@code command} field is empty.
+         *
          * @see #next(RedirectOutput)
          */
         public Builder toFile(RedirectOutput redirect) {
