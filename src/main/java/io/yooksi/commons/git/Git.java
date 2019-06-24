@@ -9,8 +9,10 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -24,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 @MethodsNotNull
@@ -249,6 +252,52 @@ public class Git extends org.eclipse.jgit.api.Git {
                 throw new IllegalStateException(String.format(log, branch), e2);
             }
         }
+    }
+
+    /**
+     * Retrieve last commit reference with {@link LogCommand} then parse
+     * and decode the complete commit message to a string.
+     *
+     * @return last commit's full message
+     *
+     * @throws NoHeadException if no HEAD exists and no explicit starting revision was specified.
+     * @throws GitAPIException if an exception occurred while executing {@link LogCommand#call()}.
+     *
+     * @see org.eclipse.jgit.api.Git#log()
+     * @see RevCommit#getFullMessage()
+     */
+    public String getLastCommitMessage() throws GitAPIException {
+
+        java.util.Iterator<RevCommit> commits = log().call().iterator();
+        return commits.hasNext() ? commits.next().getFullMessage() : "";
+    }
+
+    /**
+     * Compile and return a {@code List} of all commits found on the current branch.
+     * The order of list elements will be the same as the order at which they were originally compiled
+     * by {@link LogCommand#all()}. This insertion sorting order should naturally correlate to values
+     * provided by {@link RevCommit#commitTime} from newest to oldest. In short the newest commit will
+     * be the first element, and the oldest commit will be the last element of the returned list.
+     *
+     * @return {@code List} of all commits found on the current branch.
+     * @throws IOException if some commit references could not be accessed
+     * @throws GitAPIException if an exception occurred while executing {@link LogCommand#call()}.
+     *
+     * @see org.eclipse.jgit.api.Git#log()
+     */
+    public List<RevCommit> getAllCommits() throws IOException, GitAPIException {
+
+        List<RevCommit> commits = new ArrayList<>();
+        log().all().call().forEach(commits::add);
+        return commits;
+    }
+
+    /**
+     * @return a reference on the current branch that corresponds to {@code HEAD}.
+     * @throws IOException if the reference space cannot be accessed.
+     */
+    public Ref getHead() throws IOException {
+        return getRepository().findRef(Constants.HEAD);
     }
 
     /**
