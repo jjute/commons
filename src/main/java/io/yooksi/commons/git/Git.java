@@ -217,12 +217,13 @@ public class Git extends org.eclipse.jgit.api.Git {
      * @param create whether to create the branch if it does not already exist
      * @return a reference to the checked out branch
      *
-     * @throws IOException if the reference space under given branch cannot be accessed.
-     *                     This exception is thrown from {@link RefDatabase#exactRef(String)}.
-     *                     The exact reason is not well documented.
+     * @throws IOException This exception is thrown from {@link RefDatabase#exactRef(String)}
+     *                     when the reference space under given branch cannot be accessed.
      *
      * @throws GitAPIException if an exception occurred while executing {@link CheckoutCommand#call()}.
-     * @throws IllegalStateException if the checkout operation failed due to unresolved conflicts.
+     * @throws CheckoutConflictException if the checkout operation failed due to unresolved conflicts.
+     * @throws CreateBranchFailedException if branch creation failed because the branch already exists,
+     *                                     or an unknown reason is preventing the branch from being created.
      *
      * @see org.eclipse.jgit.api.Git#checkout()
      * @see CheckoutCommand#setCreateBranch(boolean)
@@ -230,31 +231,40 @@ public class Git extends org.eclipse.jgit.api.Git {
     public Ref checkoutBranch(String branch, boolean create) throws IOException, GitAPIException {
 
         try {
-            CheckoutCommand cmd = checkout().setName(branch);
-            if (create && getRepository().findRef(branch) == null)
-            {
-                LibraryLogger.debug("Create and checkout new branch " + branch);
-                //noinspection ConstantConditions
-                cmd.setCreateBranch(create);
-            }
-            else LibraryLogger.debug("Checking out branch " + branch);
-            return cmd.call();
+            return checkoutBranchInternal(branch, create);
         }
         /* This exception will be thrown when we cant checkout because of unresolved conflicts.
          * So we're gonna stash the changes and try to checkout the branch again.
          */
-        catch (CheckoutConflictException e1) {
-
-            try {
-                stashChanges();
-                return checkoutBranch(branch, create);
-            }
-            catch (CheckoutConflictException e2)
-            {
-                String log = "Unable to checkout branch %s due to unresolved conflicts.";
-                throw new IllegalStateException(String.format(log, branch), e2);
-            }
+        catch (CheckoutConflictException e1)
+        {
+            stashChanges(true);
+            return checkoutBranchInternal(branch, create);
         }
+    }
+    /**
+     * Internal method used to checkout branch..
+     * @see #checkoutBranch(String, boolean)
+     */
+    private Ref checkoutBranchInternal(String branch, boolean create) throws GitAPIException, IOException {
+
+        CheckoutCommand cmd = checkout().setName(branch);
+        if (create)
+        {
+            if (getRepository().findRef(branch) == null)
+            {
+                LibraryLogger.debug("Creating and checking out new branch " + branch);
+                String oldBranch = getRepository().getBranch();
+                cmd = cmd.setCreateBranch(true);
+
+                if (oldBranch.equals(getRepository().getBranch())) {
+                    throw new CreateBranchFailedException(branch);
+                }
+            }
+            else throw new CreateBranchFailedException(branch, "target already exists");
+        }
+        else LibraryLogger.debug("Checking out branch " + branch);
+        return cmd.call();
     }
 
     /**
