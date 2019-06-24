@@ -73,7 +73,7 @@ public class Git extends org.eclipse.jgit.api.Git {
      * @param repoPath {@code Path} to the repository to open
      * @return a {@link org.eclipse.jgit.api.Git} object for the existing git repository
      *
-     * @throws FileNotFoundException if the file represented by the given path does not exist.
+     * @throws java.io.FileNotFoundException if the file represented by the given path does not exist.
      * @throws IOException if the repository could not be accessed to configure builder's parameters.
      */
     public static Git openRepository(Path repoPath) throws IOException {
@@ -128,6 +128,13 @@ public class Git extends org.eclipse.jgit.api.Git {
         String absPath = rootDirPath.toAbsolutePath().toString();
         LibraryLogger.debug("Initializing Git repository in directory " + absPath);
         return new Git(command.call().getRepository());
+    }
+
+    /**
+     * @return {@code String} form of the commit's SHA-1, in lower case hexadecimal.
+     */
+    public static String getCommitSHA(RevCommit commit) {
+        return commit.toObjectId().getName();
     }
 
     /**
@@ -282,43 +289,15 @@ public class Git extends org.eclipse.jgit.api.Git {
         stashApply().call();
     }
 
-    public java.util.List<DiffEntry> diff(AbstractTreeIterator from, AbstractTreeIterator to,
-                                          OutputStream out, @Nullable TreeFilter filter) throws GitAPIException {
+
+    public List<DiffEntry> diff(AbstractTreeIterator from, AbstractTreeIterator to, java.io.OutputStream out,
+                                @Nullable TreeFilter filter) throws GitAPIException {
 
             return diff().setOldTree(from).setNewTree(to)
                     .setPathFilter(filter == null ? TreeFilter.ALL : filter).setOutputStream(out).call();
     }
 
     /**
-     * @return {@code String} form of the commit's SHA-1, in lower case hexadecimal.
      */
-    public static String getCommitSHA(RevCommit commit) {
-        return commit.toObjectId().getName();
     }
-
-//    public static void constructDiffCommand(Path path, String from, String to, Path output) {
-//
-//        String log = "Getting diff for file: \"%s\"%nRevision: \"%s\" -- %s%n";
-//        System.out.printf(log, path.getFileName().toString(), from, to);
-//
-//        String filename = FilenameUtils.removeExtension(path.getFileName().toString()) + ".diff";
-//        Path outputPath = Paths.get(output.toString(), filename);
-//
-//        java.io.File outputFile = outputPath.toFile();
-//        java.io.File parentFile = outputFile.getParentFile();
-//
-//        if (!outputFile.exists()) {
-//            try {
-//                if (!parentFile.exists() && !parentFile.mkdir() && !outputFile.createNewFile())
-//                {
-//                    Exception e = new IOException("Unable to create new output file");
-//                    throw new IllegalStateException(output.toString(), e);
-//                }
-//            } catch (IOException e) {
-//                throw new IllegalStateException(e);
-//            }
-//        }
-//        git diff $gitBranch:./$3 $2:./$3 > $4
-//        runGitBashScript(, to, from, convertToGitPath(path), convertToGitPath(outputPath));
-//    }
 }
