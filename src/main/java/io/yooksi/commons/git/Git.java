@@ -22,6 +22,7 @@ import org.eclipse.jgit.lib.RefDatabase;
 import org.eclipse.jgit.util.FileUtils;
 import org.jetbrains.annotations.Nullable;
 
+import javax.validation.constraints.Positive;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -298,6 +299,39 @@ public class Git extends org.eclipse.jgit.api.Git {
      */
     public Ref getHead() throws IOException {
         return getRepository().findRef(Constants.HEAD);
+    }
+
+    /**
+     * Rewind the current {@code HEAD} for {@code N} steps using the specified mode.
+     * This operation is equivalent to executing {@code git reset HEAD~N} with {@code N}
+     * being the number of commits to reset. Internally the method will retrieve a list of
+     * all commits currently residing on the current branch and perform the {@code reset}
+     * command with the {@code ref} set to the {@code SHA} of the {@code Nth} commit.
+     *
+     * @param steps number of commits (from {@code HEAD}) to rewind.
+     * @param mode {@code ResetType} to use when configuring the reset command.
+     * @return reference to the new {@code HEAD} of the current branch.
+     *
+     * @throws IOException thrown by {@link #getAllCommits()} if some commit references could not be accessed.
+     * @throws GitAPIException if an exception occurred while executing {@link ResetCommand#call()}.
+     *
+     * @see org.eclipse.jgit.api.Git#reset()
+     */
+    public Ref rewind(@Positive int steps, @Nullable ResetCommand.ResetType mode) throws IOException, GitAPIException {
+
+        if (steps < 0) {
+            String log = "Cannot reset current HEAD for %d steps. Value must be a positive number.";
+            throw new IllegalArgumentException(String.format(log, steps));
+        }
+        List<RevCommit> commits = getAllCommits();
+        if (steps >= commits.size())
+        {
+            String log = "Cannot reset current HEAD for %d steps. Not enough commits (%d) to accommodate the request.";
+            throw new IndexOutOfBoundsException(String.format(log, steps, commits.size()));
+        }
+        String ref = commits.get(steps).getName();
+        LibraryLogger.debug("Performing %s reset on HEAD to ref \"%s\"", mode, ref);
+        return reset().setRef(ref).setMode(mode != null ? mode : ResetCommand.ResetType.MIXED).call();
     }
 
     /**
