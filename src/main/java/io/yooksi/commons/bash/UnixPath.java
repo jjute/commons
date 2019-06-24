@@ -2,6 +2,7 @@ package io.yooksi.commons.bash;
 
 import io.yooksi.commons.define.MethodsNotNull;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -24,23 +25,41 @@ public class UnixPath {
     private final String path;
 
     private UnixPath(Path path) {
-        this.path = path.toString().replace("\\", "/");
+        this.path = convert(path);
     }
 
     /**
-     * Convert a given path into a <i>Unix-style</i> path.
+     * Convert a given {@code File} path into a <i>Unix-style</i> path.
+     */
+    public static UnixPath get(File file) {
+        return new UnixPath(file.toPath());
+    }
+    /**
+     * Convert a given {@code Path} into a <i>Unix-style</i> path.
      */
     public static UnixPath get(Path path) {
         return new UnixPath(path);
     }
     /**
      * Convert a given path into a <i>Unix-style</i> path.
+     *
+     * @throws java.nio.file.InvalidPathException
+     * if the path {@code String} cannot be converted to a {@code Path}
      */
     public static UnixPath get(String path) {
         return new UnixPath(Paths.get(path));
     }
+
     /**
-     * Convert this path to a standard Java {@code Path} object.
+     * Convert the given path to a standard Java {@code Path}.
+     * Use this method when you don't want to instantiate a {@code UnixPath}
+     * object and just want a quick conversion to a <i>Unix-style</i> path.
+     */
+    public static String convert(Path path) {
+        return path.toString().replace("\\", "/");
+    }
+    /**
+     * Convert this path to a standard Java {@code Path}.
      */
     public Path convert() {
         return Paths.get(path);
