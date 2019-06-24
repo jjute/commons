@@ -59,10 +59,11 @@ public class Git extends org.eclipse.jgit.api.Git {
     public static Git openRepository() {
 
         try {
+            LibraryLogger.debug("Opening Git repository in root directory.");
             return new Git(open(new File(".git")).getRepository());
         }
         catch (IOException e) {
-            throw new IllegalStateException("Unable to open git repository in root directory", e);
+            throw new IllegalStateException("Unable to open Git repository in root directory", e);
         }
     }
 
@@ -80,9 +81,12 @@ public class Git extends org.eclipse.jgit.api.Git {
         File repo = repoPath.toFile();
         if (!repo.exists()) {
             String log = "Unable to find Git repository under path \"%s\"";
-            throw new FileNotFoundException(String.format(log, repoPath.toString()));
+            throw new java.io.FileNotFoundException(String.format(log, repoPath.toAbsolutePath().toString()));
         }
-        else return new Git(org.eclipse.jgit.api.Git.open(repo).getRepository());
+        else {
+            LibraryLogger.debug("Opening Git repository under path " + repoPath.toAbsolutePath().toString());
+            return new Git(org.eclipse.jgit.api.Git.open(repo).getRepository());
+        }
     }
 
     /**
@@ -115,12 +119,14 @@ public class Git extends org.eclipse.jgit.api.Git {
             command = Git.init().setDirectory(rootDir);
         }
         else {
-            LibraryLogger.warn("Tried to initialize a repository inside a recursive directory (.git\\.git).");
+            LibraryLogger.warn("Tried to initialize a Git repository inside a recursive directory (.git\\.git).");
             command = Git.init().setGitDir(rootDir);
         }
         if (!rootDir.exists()) {
             FileUtils.mkdirs(rootDir);
         }
+        String absPath = rootDirPath.toAbsolutePath().toString();
+        LibraryLogger.debug("Initializing Git repository in directory " + absPath);
         return new Git(command.call().getRepository());
     }
 
