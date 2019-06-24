@@ -1,9 +1,11 @@
 package io.yooksi.commons.git;
 
+import com.sun.org.apache.xml.internal.serialize.LineSeparator;
 import io.yooksi.commons.bash.UnixPath;
 import io.yooksi.commons.define.MethodsNotNull;
 import io.yooksi.commons.logger.LibraryLogger;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -19,11 +21,10 @@ import org.eclipse.jgit.util.FileUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.List;
 
 @MethodsNotNull
 @SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused"})
@@ -293,6 +294,13 @@ public class Git extends org.eclipse.jgit.api.Git {
         stashApply().call();
     }
 
+    public String[] diff(@Nullable TreeFilter filter) throws GitAPIException, IOException {
+
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            diff().setPathFilter(filter == null ? TreeFilter.ALL : filter).setOutputStream(stream).call();
+            return stream.toString(Charset.defaultCharset()).split(LineSeparator.Unix);
+        }
+    }
 
     public List<DiffEntry> diff(AbstractTreeIterator from, AbstractTreeIterator to, java.io.OutputStream out,
                                 @Nullable TreeFilter filter) throws GitAPIException {
