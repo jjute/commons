@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 
 @MethodsNotNull
@@ -30,6 +31,8 @@ public class Git extends org.eclipse.jgit.api.Git {
 
     private final java.util.Map<RevCommit, String> stashMap =
             java.util.Collections.synchronizedMap(new java.util.Hashtable<>());
+    
+    private final UnixPath repoRootDirPath;
 
     /**
      * Construct a new {@link org.eclipse.jgit.api.Git} object which can
@@ -46,6 +49,7 @@ public class Git extends org.eclipse.jgit.api.Git {
      */
     public Git(Repository repo) {
         super(repo);
+        repoRootDirPath = UnixPath.get(repo.getDirectory().getParentFile());
     }
 
     /**
@@ -184,17 +188,17 @@ public class Git extends org.eclipse.jgit.api.Git {
      * A directory name (e.g. dir to add dir/file1 and dir/file2) can
      * also be given to add all files in the directory, recursively.
      *
-     * @param path <i>Unix-style</i> path to the file to add
+     * @param path {@code Path} to the file to add
      * @return reference to the index file just added
      * @throws GitAPIException if an exception occurred while executing {@link AddCommand#call()}.
      *
      * @see org.eclipse.jgit.api.Git#add()
      * @see AddCommand#addFilepattern(String)
      */
-    public DirCache add(UnixPath path) throws GitAPIException {
+    public DirCache add(Path path) throws GitAPIException {
 
         LibraryLogger.debug("Adding \"%s\" to indexed files.", path.toString());
-        return add().addFilepattern(path.toString()).call();
+        return add().addFilepattern(relativizePath(path).toString()).call();
     }
 
     /**
@@ -298,6 +302,16 @@ public class Git extends org.eclipse.jgit.api.Git {
     }
 
     /**
+     * Construct and return a path relative to repository root directory path.
+     * The given path can be both {@code Unix} or {@code Windows} compatible.
+     *
+     * @param path {@code Path} to relativize
+     * @return {@code UnixPath} that represents a relative path between repository
+     *         root directory path and the given path.
+     *
+     * @see FileUtils#relativizeGitPath(String, String)
      */
+    public UnixPath relativizePath(Path path) {
+        return UnixPath.get(FileUtils.relativizeGitPath(repoRootDirPath.toString(), UnixPath.convert(path)));
     }
 }
