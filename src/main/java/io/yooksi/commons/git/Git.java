@@ -40,8 +40,7 @@ public class Git extends org.eclipse.jgit.api.Git {
     private final UnixPath repoRootDirPath;
 
     /**
-     * Construct a new {@link org.eclipse.jgit.api.Git} object which can
-     * interact with the specified git repository.
+     * Construct a new {@link Git} object which can interact with the specified git repository.
      * <p>
      * All command classes returned by methods of this class will always
      * interact with this git repository.
@@ -84,6 +83,8 @@ public class Git extends org.eclipse.jgit.api.Git {
      *
      * @throws java.io.FileNotFoundException if the file represented by the given path does not exist.
      * @throws IOException if the repository could not be accessed to configure builder's parameters.
+     *
+     * @see org.eclipse.jgit.api.Git#open(File)
      */
     public static Git openRepository(Path repoPath) throws IOException {
 
@@ -117,7 +118,8 @@ public class Git extends org.eclipse.jgit.api.Git {
      *
      * @return an instance of the (re)initialized repository
      * @throws GitAPIException if an exception occurred while executing {@link InitCommand#call()}.
-     * @see Git#init()
+     *
+     * @see org.eclipse.jgit.api.Git#init()
      */
     public static Git initRepository(Path rootDirPath) throws IOException, GitAPIException {
 
@@ -184,7 +186,7 @@ public class Git extends org.eclipse.jgit.api.Git {
      */
     public RevCommit commit(String message) throws GitAPIException {
 
-        LibraryLogger.debug("Committing indexed files");
+        LibraryLogger.debug("Committing all indexed files");
         return commit().setMessage(message).call();
     }
 
