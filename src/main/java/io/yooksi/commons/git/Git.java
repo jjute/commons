@@ -5,11 +5,13 @@ import io.yooksi.commons.bash.UnixPath;
 import io.yooksi.commons.define.MethodsNotNull;
 import io.yooksi.commons.logger.LibraryLogger;
 
+import io.yooksi.commons.util.StringUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
+import org.eclipse.jgit.api.errors.StashApplyFailureException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Constants;
@@ -194,8 +196,10 @@ public class Git extends org.eclipse.jgit.api.Git {
 
     /**
      * Updates files in the working tree to match the version in the index or the specified tree.
-     * If no paths are given, git checkout will also update {@code HEAD} to set the
-     * specified branch as the current branch.
+     * If no paths are given, git checkout will also update {@code HEAD} to set the specified branch
+     * as the current branch. If the checkout operation fails with {@link CheckoutConflictException}
+     * due to unresolved conflicts the changes will be stored to a {@link StashShelf} with tracking
+     * enabled with will automatically pop the changes the next time this branch is checked out.
      *
      * @param branch name of the branch to checkout
      * @param create whether to create the branch if it does not already exist
@@ -214,40 +218,52 @@ public class Git extends org.eclipse.jgit.api.Git {
      */
     public Ref checkoutBranch(String branch, boolean create) throws IOException, GitAPIException {
 
+        String currentBranch = getRepository().getBranch();
         try {
-            return checkoutBranchInternal(branch, create);
+            Ref result = checkoutBranchInternal(currentBranch, branch, create);
+            stashShelf.popTrackedEntries(branch);
+            return result;
         }
         /* This exception will be thrown when we cant checkout because of unresolved conflicts.
-         * So we're gonna stash the changes and try to checkout the branch again.
+         * So we're gonna stash the changes and try to checkout the branch again
          */
         catch (CheckoutConflictException e1)
         {
-            stashChanges(true);
-            return checkoutBranchInternal(branch, create);
+            LibraryLogger.warn("Local changes to files would be overwritten by checkout. " +
+                    "Going to shelf the changes and try checking out branch again");
+
+            /* Store the changes in a shelf and enable tracking so they will be
+             * automatically popped the next time we checkout this branch
+             */
+            shelfChanges(true);
+
+            Ref result = checkoutBranchInternal(currentBranch, branch, create);
+            stashShelf.popTrackedEntries(branch);
+            return result;
         }
     }
     /**
-     * Internal method used to checkout branch..
+     * Internal method used to checkout branch.
      * @see #checkoutBranch(String, boolean)
      */
-    private Ref checkoutBranchInternal(String branch, boolean create) throws GitAPIException, IOException {
+    private Ref checkoutBranchInternal(String oldBranch, String newBranch, boolean create) throws GitAPIException, IOException {
 
-        CheckoutCommand cmd = checkout().setName(branch);
+        CheckoutCommand cmd = checkout().setName(newBranch);
         if (create)
         {
-            if (getRepository().findRef(branch) == null)
+            if (getRepository().findRef(newBranch) == null)
             {
-                LibraryLogger.debug("Creating and checking out new branch " + branch);
-                String oldBranch = getRepository().getBranch();
-                cmd = cmd.setCreateBranch(true);
+                LibraryLogger.debug("Creating and checking out new branch " + newBranch);
+                Ref result = cmd.setCreateBranch(true).call();
 
                 if (oldBranch.equals(getRepository().getBranch())) {
-                    throw new CreateBranchFailedException(branch);
+                    throw new CreateBranchFailedException(newBranch);
                 }
+                else return result;
             }
-            else throw new CreateBranchFailedException(branch, "target already exists");
+            else throw new CreateBranchFailedException(newBranch, "target already exists");
         }
-        else LibraryLogger.debug("Checking out branch " + branch);
+        else LibraryLogger.debug("Checking out branch " + newBranch);
         return cmd.call();
     }
 
@@ -331,46 +347,183 @@ public class Git extends org.eclipse.jgit.api.Git {
     }
 
     /**
+     * Internal method to stash local changes decoupled to delegate the responsibility
+     * of retrieving the name of the current branch and the {@code IOException} that throws.
+     *
+     * @param branch name of the branch to include in the debug log.
+     * @return reference to the stashed commit
+     *
+     * @throws GitAPIException if an exception occurred while executing {@link StashCreateCommand}
+     * @see #stashChanges()
+     */
+    private RevCommit stashChanges(String branch) throws GitAPIException {
+
+        LibraryLogger.debug("Stashing local changes on branch " + branch);
+        return stashCreate().call();
+    }
+
+    /**
      * Use this method when you want to record the current state of the working directory and the index,
      * but want to go back to a clean working directory. The command saves your local modifications away
      * and reverts the working directory to match the {@code HEAD} commit.
      *
      * @return reference to the stashed commit
      *
-     * @throws GitAPIException if an exception occurred while executing {@link StashCreateCommand#call()}
+     * @throws GitAPIException if an exception occurred while executing a {@link StashCreateCommand}
      * @throws IOException when we're unable to resolve current branch
      *
      * @see org.eclipse.jgit.api.Git#stashCreate()
      */
     public RevCommit stashChanges() throws GitAPIException, IOException {
-
-        String branch = getRepository().getBranch();
-        LibraryLogger.debug("Stashing local changes on branch " + branch);
-
-        return registerStash(stashCreate().call(), branch);
+        return stashChanges(getRepository().getBranch());
     }
 
     /**
-     * Apply the changes in the last stashed commit to the working directory and index.
-     * This operation is similar to {@code pop}, but does not remove the state from the
-     * stash list. Unlike {@code pop, <stash>} may be any commit that looks like a commit
+     * Stash local changes and add shelf the resulting stash reference.
+     *
+     * @param track whether to track the created shelf entry.
+     * @return reference to the stashed commit
+     *
+     * @throws GitAPIException if an exception occurred while executing a {@link StashCreateCommand}
+     * @throws IOException when we're unable to resolve current branch
+     *
+     * @see #stashChanges()
+     * @see StashShelf#add(RevCommit, String, boolean)
+     */
+    public RevCommit shelfChanges(boolean track) throws IOException, GitAPIException {
+
+        String branch = getRepository().getBranch();
+        return stashShelf.add(stashChanges(branch), branch, track);
+    }
+
+    /**
+     * @return a {@code List} of stashed commits in this repository.
+     * @throws GitAPIException if an exception occurred while executing a {@link StashListCommand}
+     */
+    public List<RevCommit> getStashList() throws GitAPIException {
+        return new ArrayList<>(stashList().call());
+    }
+
+    /**
+     * Retrieve the index number that corresponds to the position of the given stash inside the
+     * stash reflog: {@code refs/stash}. For example; accessing a reflog with an index value of 0
+     * ({@code stash@{0}}) would give us the most recently created stash while an index value of 1
+     * ({@code stash@{1}}) would give us the stash created before it.
+     *
+     * @param stashSha {@code SHA-1} representation of the stash to retrieve the index for
+     * @return the index number that corresponds to the position of the given stash inside
+     *         the stash reflog or more technically the index position of the given stash
+     *         in the {@code List} returned by {@link StashListCommand}. A negative value
+     *         {@code -1} will be returned if the stash reference could not be resolved.
+     *
+     * @throws GitAPIException if an exception occurred while calling {@link #getStashList()}.
+     */
+    private int getStashIndex(String stashSha) throws GitAPIException {
+
+        List<RevCommit> stashList = getStashList();
+        for (int i = 0; i < stashList.size(); i++) {
+            if (stashList.get(i).getName().equals(stashSha))
+                return i;
+        }
+        return -1;
+    }
+
+    /**
+     * Internal method to apply a stash to the working directory.
+     *
+     * @param stashSha {@code SHA-1} representation of the stash reference to apply.
+     * @return {@code SHA-1} reference abstraction of the stash applied.
+     *
+     * @throws StashApplyFailureException if the given {@code SHA} does not correspond to an existing stash.
+     * @throws GitAPIException if an exception occurred while executing the {@code call()}
+     *                         method in {@link StashApplyCommand}
+     *
+     * @see #applyStash(String)
+     */
+    private ObjectId applyStashInternal(String stashSha) throws GitAPIException {
+
+        if (!stashSha.isEmpty()) {
+            if (getStashIndex(stashSha) >= 0) {
+                return stashApply().setStashRef(stashSha).call();
+            }
+            String log = "Unable to apply stash %s, SHA does not correspond to an exiting stash..";
+            throw new StashApplyFailureException(String.format(log, stashSha));
+        }
+        else return stashApply().call();
+    }
+
+    /**
+     * Apply a stash with a reference that matches the given {@code SHA-1} to the working directory.
+     * This operation is similar to {@code pop}, but does not remove the state from the stash list.
+     * Unlike {@code pop, <stash>} may be any commit that looks like a commit
      * created by {@code stash push} or {@code stash create}.
      *
-     * @throws GitAPIException if an exception occurred while executing
-     * {@link StashApplyCommand#call()} or {@link StashListCommand#call()}.
+     * @param stashSha {@code SHA-1} representation of the stash reference to apply. This will default to
+     *                 apply the latest stashed commit ({@code stash@{0}}) if {@code null} or empty.
+     *
+     * @throws GitAPIException if an exception occurred while executing the {@code call()}
+     *                         method in {@link StashApplyCommand} or {@link StashListCommand}.
      *
      * @throws IOException when we're unable to resolve current branch
      *
      * @see org.eclipse.jgit.api.Git#stashApply()
      */
-    public void applyStash() throws GitAPIException, IOException {
+    public void applyStash(String stashSha) throws GitAPIException, IOException {
 
         String branch = getRepository().getBranch();
         LibraryLogger.debug("Applying stashed changes on branch " + branch);
 
-        java.util.Collection<RevCommit> stashes = stashList().call();
+        if (stashList().call().isEmpty()) {
+            LibraryLogger.warn("Unable to apply stash to working tree, stashList is empty.");
+        }
+        else stashShelf.remove(applyStashInternal(stashSha));
+    }
 
-        stashApply().call();
+    /**
+     * Apply the changes in the last stashed commit to the working directory.
+     *
+     * @throws GitAPIException if an exception occurred while applying stash.
+     * @throws IOException when we're unable to resolve current branch.
+     *
+     * @see #applyStash(String)
+     */
+    public void applyStash() throws GitAPIException, IOException {
+        applyStash(StringUtils.EMPTY);
+    }
+
+    /**
+     * <p>
+     *     Remove a single stashed state from the stash list and apply it on top of the current working tree state,
+     *     i.e., do the inverse operation of {@code git stash push}. The working directory must match the index.
+     *     Applying the state can fail with conflicts; in this case, it is not removed from the stash list.
+     *     You need to resolve the conflicts by hand and call {@code git stash drop} manually afterwards.
+     * </p><p>
+     *     This operation is equivalent to calling {@code git stash apply} followed by {@code git stash drop},
+     *     which would programmatically translate to calling {@link #applyStash(String)} followed by executing
+     *     a {@link StashDropCommand} with the stash ref set to the given stash {@code SHA}.
+     * </p>
+     * @param stashSha {@code SHA-1} representation of the stash to pop. For both apply and drop operations
+     *                 this will default to the latest stashed commit ({@code stash@{0}}) if {@code null} or empty.
+     *
+     * @throws IOException thrown by {@link #applyStash(String)}} when the current branch is unable to be resolved.
+     * @throws StashApplyFailureException if the given {@code SHA} does not correspond to an existing stash.
+     * @throws GitAPIException if an exception occurred when executing the {@code call()} method in
+     *                         {@link StashListCommand} or {@link StashDropCommand}.
+     *
+     * @see <a href=https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-pop--index-q--quietltstashgt>
+     *      Git documentation about Pop</a>
+     */
+    public void popStash(String stashSha) throws GitAPIException, IOException {
+
+        int index = getStashIndex(stashSha);
+        if (index >= 0) {
+            LibraryLogger.debug("Popping stash@{%d}: %s", index, stashSha);
+            applyStash(stashSha); stashDrop().setStashRef(index).call();
+        }
+        else {
+            String log = "Unable to pop stash %s, SHA does not correspond to an exiting stash.";
+            throw new StashApplyFailureException(String.format(log, stashSha));
+        }
     }
 
     public String[] diff(@Nullable TreeFilter filter) throws GitAPIException, IOException {
