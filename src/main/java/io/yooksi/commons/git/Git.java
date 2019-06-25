@@ -14,13 +14,10 @@ import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.api.errors.StashApplyFailureException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
-import org.eclipse.jgit.lib.RefDatabase;
 import org.eclipse.jgit.util.FileUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -122,7 +119,7 @@ public class Git extends org.eclipse.jgit.api.Git {
      *                    directory ({@code .git}) in which case a warning will be logged.
      *
      * @return an instance of the (re)initialized repository
-     * @throws GitAPIException if an exception occurred while executing {@link InitCommand#call()}.
+     * @throws GitAPIException if an exception occurred while executing {@link InitCommand}
      *
      * @see org.eclipse.jgit.api.Git#init()
      */
@@ -165,8 +162,8 @@ public class Git extends org.eclipse.jgit.api.Git {
      * 	               been modified and deleted, but new files not known by the repository are not affected.
      * 	               This corresponds to the parameter {@code -a} on the command line.
      *
-     * @return a reference to the commit
-     * @throws GitAPIException if an exception occurred while executing {@link CommitCommand#call()}.
+     * @return a reference to the resulting commit
+     * @throws GitAPIException if an exception occurred while executing {@link CommitCommand}
      *
      * @see org.eclipse.jgit.api.Git#commit()
      */
@@ -183,7 +180,7 @@ public class Git extends org.eclipse.jgit.api.Git {
      *
      * @param path {@code Path} to the file to add
      * @return reference to the index file just added
-     * @throws GitAPIException if an exception occurred while executing {@link AddCommand#call()}.
+     * @throws GitAPIException if an exception occurred while executing {@link AddCommand}
      *
      * @see org.eclipse.jgit.api.Git#add()
      * @see AddCommand#addFilepattern(String)
@@ -208,7 +205,7 @@ public class Git extends org.eclipse.jgit.api.Git {
      * @throws IOException This exception is thrown from {@link RefDatabase#exactRef(String)}
      *                     when the reference space under given branch cannot be accessed.
      *
-     * @throws GitAPIException if an exception occurred while executing {@link CheckoutCommand#call()}.
+     * @throws GitAPIException if an exception occurred while executing {@link CheckoutCommand)}.
      * @throws CheckoutConflictException if the checkout operation failed due to unresolved conflicts.
      * @throws CreateBranchFailedException if branch creation failed because the branch already exists,
      *                                     or an unknown reason is preventing the branch from being created.
@@ -274,7 +271,7 @@ public class Git extends org.eclipse.jgit.api.Git {
      * @return last commit's full message
      *
      * @throws NoHeadException if no HEAD exists and no explicit starting revision was specified.
-     * @throws GitAPIException if an exception occurred while executing {@link LogCommand#call()}.
+     * @throws GitAPIException if an exception occurred while executing {@link LogCommand}.
      *
      * @see org.eclipse.jgit.api.Git#log()
      * @see RevCommit#getFullMessage()
@@ -294,7 +291,7 @@ public class Git extends org.eclipse.jgit.api.Git {
      *
      * @return {@code List} of all commits found on the current branch.
      * @throws IOException if some commit references could not be accessed
-     * @throws GitAPIException if an exception occurred while executing {@link LogCommand#call()}.
+     * @throws GitAPIException if an exception occurred while executing {@link LogCommand}.
      *
      * @see org.eclipse.jgit.api.Git#log()
      */
@@ -325,7 +322,7 @@ public class Git extends org.eclipse.jgit.api.Git {
      * @return reference to the new {@code HEAD} of the current branch.
      *
      * @throws IOException thrown by {@link #getAllCommits()} if some commit references could not be accessed.
-     * @throws GitAPIException if an exception occurred while executing {@link ResetCommand#call()}.
+     * @throws GitAPIException if an exception occurred while executing {@link ResetCommand}.
      *
      * @see org.eclipse.jgit.api.Git#reset()
      */
@@ -369,8 +366,8 @@ public class Git extends org.eclipse.jgit.api.Git {
      *
      * @return reference to the stashed commit
      *
-     * @throws GitAPIException if an exception occurred while executing a {@link StashCreateCommand}
-     * @throws IOException when we're unable to resolve current branch
+     * @throws GitAPIException if an exception occurred while executing {@link StashCreateCommand}
+     * @throws IOException when we're unable to resolve the current branch
      *
      * @see org.eclipse.jgit.api.Git#stashCreate()
      */
@@ -384,7 +381,7 @@ public class Git extends org.eclipse.jgit.api.Git {
      * @param track whether to track the created shelf entry.
      * @return reference to the stashed commit
      *
-     * @throws GitAPIException if an exception occurred while executing a {@link StashCreateCommand}
+     * @throws GitAPIException if an exception occurred while executing {@link StashCreateCommand}
      * @throws IOException when we're unable to resolve current branch
      *
      * @see #stashChanges()
@@ -398,7 +395,7 @@ public class Git extends org.eclipse.jgit.api.Git {
 
     /**
      * @return a {@code List} of stashed commits in this repository.
-     * @throws GitAPIException if an exception occurred while executing a {@link StashListCommand}
+     * @throws GitAPIException if an exception occurred while executing {@link StashListCommand}
      */
     public List<RevCommit> getStashList() throws GitAPIException {
         return new ArrayList<>(stashList().call());
@@ -435,8 +432,7 @@ public class Git extends org.eclipse.jgit.api.Git {
      * @return {@code SHA-1} reference abstraction of the stash applied.
      *
      * @throws StashApplyFailureException if the given {@code SHA} does not correspond to an existing stash.
-     * @throws GitAPIException if an exception occurred while executing the {@code call()}
-     *                         method in {@link StashApplyCommand}
+     * @throws GitAPIException if an exception occurred while executing {@link StashApplyCommand}
      *
      * @see #applyStash(String)
      */
@@ -461,8 +457,8 @@ public class Git extends org.eclipse.jgit.api.Git {
      * @param stashSha {@code SHA-1} representation of the stash reference to apply. This will default to
      *                 apply the latest stashed commit ({@code stash@{0}}) if {@code null} or empty.
      *
-     * @throws GitAPIException if an exception occurred while executing the {@code call()}
-     *                         method in {@link StashApplyCommand} or {@link StashListCommand}.
+     * @throws GitAPIException if an exception occurred while executing
+     *                         {@link StashApplyCommand} or {@link StashListCommand}.
      *
      * @throws IOException when we're unable to resolve current branch
      *
@@ -507,8 +503,7 @@ public class Git extends org.eclipse.jgit.api.Git {
      *
      * @throws IOException thrown by {@link #applyStash(String)}} when the current branch is unable to be resolved.
      * @throws StashApplyFailureException if the given {@code SHA} does not correspond to an existing stash.
-     * @throws GitAPIException if an exception occurred when executing the {@code call()} method in
-     *                         {@link StashListCommand} or {@link StashDropCommand}.
+     * @throws GitAPIException if an exception occurred when executing {@link StashListCommand} or {@link StashDropCommand}.
      *
      * @see <a href=https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-pop--index-q--quietltstashgt>
      *      Git documentation about Pop</a>
@@ -526,6 +521,8 @@ public class Git extends org.eclipse.jgit.api.Git {
         }
     }
 
+    // ###########################################################
+
     public String[] diff(@Nullable TreeFilter filter) throws GitAPIException, IOException {
 
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
@@ -540,6 +537,8 @@ public class Git extends org.eclipse.jgit.api.Git {
             return diff().setOldTree(from).setNewTree(to)
                     .setPathFilter(filter == null ? TreeFilter.ALL : filter).setOutputStream(out).call();
     }
+
+    // ###########################################################
 
     /**
      * Construct and return a path relative to repository root directory path.

@@ -2,7 +2,9 @@ package io.yooksi.commons.git;
 
 import io.yooksi.commons.define.MethodsNotNull;
 import io.yooksi.commons.logger.LibraryLogger;
+import org.eclipse.jgit.api.StashCreateCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.StashApplyFailureException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.jetbrains.annotations.Contract;
@@ -30,7 +32,7 @@ public class StashShelf {
     /**
      * Store the given {@code RevCommit} that represents a stashed set of changes
      * in this shelf and pair it with a specified branch name. Optionally this entry
-     * can be tracked which means it will be automatically applied once the specified
+     * can be tracked which means it will be automatically popped once the specified
      * branch is checked out, in which case the entry will be removed from the shelf.
      *
      * @param stash reference to the stashed commit. Note that adding duplicate shelf entries
@@ -94,6 +96,9 @@ public class StashShelf {
         return shelfEntries.containsValue(branch);
     }
 
+    /**
+     * @return a {@code List} of tracked stash entries for the given branch.
+     */
     public synchronized java.util.List<String> getTrackedEntries(String branch) {
 
         return shelfEntries.entrySet().stream()
@@ -101,6 +106,17 @@ public class StashShelf {
                 .map(Map.Entry::getKey).collect(Collectors.toList());
     }
 
+    /**
+     * Execute {@link Git#popStash(String)} for each shelved entry that is being tracked for the
+     * given branch. Each performed operation is equivalent to {@code git stash pop <shelved stash>}.
+     *
+     * @param branch name of the branch for tracked entries
+     * @return {@code true} if all matched tracked entries were successfully popped.
+     *
+     * @throws GitAPIException if an exception occurred while executing {@link Git#popStash(String)}
+     * @throws StashApplyFailureException if one of the matched entries could not be popped.
+     * @throws IOException when we're unable to resolve the current branch
+     */
     public synchronized boolean popTrackedEntries(String branch) throws GitAPIException, IOException {
 
         if (trackingStashForBranch(branch))
