@@ -179,15 +179,20 @@ public class Git extends org.eclipse.jgit.api.Git {
      * associated with the working tree, in which case {@code HEAD} is "detached" as described
      * in <a href=https://git-scm.com/docs/git-checkout>git-checkout[1]</a>)
      *
-     * @return A reference to the commit
+     * @param message the commit message
+     * @param stageAll If set to {@code true} the Commit command automatically stages files that have
+     * 	               been modified and deleted, but new files not known by the repository are not affected.
+     * 	               This corresponds to the parameter {@code -a} on the command line.
+     *
+     * @return a reference to the commit
      * @throws GitAPIException if an exception occurred while executing {@link CommitCommand#call()}.
      *
      * @see org.eclipse.jgit.api.Git#commit()
      */
-    public RevCommit commit(String message) throws GitAPIException {
+    public RevCommit commit(String message, boolean stageAll) throws GitAPIException {
 
         LibraryLogger.debug("Committing all indexed files");
-        return commit().setMessage(message).call();
+        return commit().setAll(stageAll).setMessage(message).call();
     }
 
     /**
