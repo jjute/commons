@@ -34,10 +34,8 @@ import java.util.List;
 @SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused"})
 public class Git extends org.eclipse.jgit.api.Git {
 
-    private final java.util.Map<RevCommit, String> stashMap =
-            java.util.Collections.synchronizedMap(new java.util.Hashtable<>());
-    
     private final UnixPath repoRootDirPath;
+    private final StashShelf stashShelf;
 
     /**
      * Construct a new {@link Git} object which can interact with the specified git repository.
@@ -54,6 +52,11 @@ public class Git extends org.eclipse.jgit.api.Git {
     public Git(Repository repo) {
         super(repo);
         repoRootDirPath = UnixPath.get(repo.getDirectory().getParentFile());
+        stashShelf = new StashShelf(this);
+    }
+
+    public StashShelf getStashShelf() {
+        return stashShelf;
     }
 
     /**
@@ -146,30 +149,6 @@ public class Git extends org.eclipse.jgit.api.Git {
      */
     public static String getCommitSHA(RevCommit commit) {
         return commit.toObjectId().getName();
-    }
-
-    /**
-     * Put the stash object in internal storage.
-     *
-     * @param stash reference to the stashed commit
-     * @return reference to the stashed commit
-     *
-     * @throws NullPointerException if the given {@code RevCommit} object is null
-     */
-    private synchronized RevCommit registerStash(RevCommit stash, String branch) {
-
-        stashMap.put(stash, branch);
-        return stash;
-    }
-    /**
-     * Remove the stash object from internal storage.
-     * @param stash reference to the stashed commit
-     */
-    private synchronized void unregisterStash(RevCommit stash) {
-
-        if (stashMap.remove(stash) == null) {
-            LibraryLogger.warn("Tried to remove unregistered stash " + stash);
-        }
     }
 
     /**
