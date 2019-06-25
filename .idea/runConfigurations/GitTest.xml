@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="BashTests" type="JUnit" factoryName="JUnit" nameIsGenerated="true">
+  <configuration default="false" name="GitTest" type="JUnit" factoryName="JUnit" nameIsGenerated="true">
     <module name="commons.test" />
     <extension name="coverage">
       <pattern>
@@ -8,10 +8,10 @@
       </pattern>
     </extension>
     <option name="PACKAGE_NAME" value="commons" />
-    <option name="MAIN_CLASS_NAME" value="commons.BashTests" />
+    <option name="MAIN_CLASS_NAME" value="commons.GitTest" />
     <option name="METHOD_NAME" value="" />
     <option name="TEST_OBJECT" value="class" />
-    <option name="VM_PARAMETERS" value="-ea -DcommonLoggerLevel=DEBUG -Dbash.cli.name=git-bash.exe" />
+    <option name="VM_PARAMETERS" value="-ea -DcommonLoggerLevel=DEBUG" />
     <option name="PARAMETERS" value="" />
     <method v="2">
       <option name="Make" enabled="true" />
