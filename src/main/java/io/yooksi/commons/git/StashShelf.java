@@ -122,15 +122,18 @@ public class StashShelf {
         if (trackingStashForBranch(branch))
         {
             java.util.List<String> stashList = getTrackedEntries(branch);
+            final int size = stashList.size();
+            if (size > 0)
+            {
+                String quantifier = size > 1 ? "entries" : "entry";
+                LibraryLogger.debug("Applying %d stash %s to branch %s", size, quantifier, branch);
 
-            int size = stashList.size(); String quantifier = size > 1 ? "entries" : "entry";
-            LibraryLogger.debug("Applying %d stash %s to branch %s", size, quantifier, branch);
-
-            for (String stashSha : stashList) {
-                git.popStash(stashSha);
+                for (String stashSha : stashList) {
+                    git.popStash(stashSha);
+                }
+                return !stashList.isEmpty();
             }
-            return !stashList.isEmpty();
         }
-        else return false;
+        return false;
     }
 }
