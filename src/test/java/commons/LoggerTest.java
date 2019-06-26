@@ -12,18 +12,17 @@ import java.io.IOException;
 public class LoggerTest {
 
     @Test
-    public void testloggingToLogFileSimple() throws IOException {
-
-        CommonLogger test = new CommonLogger("test", Level.TRACE, Level.INFO);
+    public void testLoggingToLogFileSimple() throws IOException {
         TestUtils.assertTextFileLineCount(testLoggingToLogFile(Level.TRACE, Level.INFO), 1);
     }
 
     @Test
-    public void testloggingToLogFileMultiLoggers() throws IOException {
+    @SuppressWarnings("unused")
+    public void testLoggingToLogFileMultiLoggers() throws IOException {
 
-        CommonLogger test1 = new CommonLogger("test", Level.ALL, Level.INFO);
-        CommonLogger test2 = new CommonLogger("test", Level.ALL, Level.INFO);
-        CommonLogger test3 = new CommonLogger("test", Level.ALL, Level.INFO);
+        CommonLogger test1 = new CommonLogger("test", Level.ALL, Level.INFO, false, true, false);
+        CommonLogger test2 = new CommonLogger("test", Level.ALL, Level.INFO, false, true, false);
+        CommonLogger test3 = new CommonLogger("test", Level.ALL, Level.INFO, false, true, false);
 
         test3.clearLogFile();
         test3.info("Printing INFO to logfile with CommonLogger at level ALL");
@@ -62,7 +61,7 @@ public class LoggerTest {
 
     private static java.io.File testLoggingToLogFile(Level level, Level logFileLevel) {
 
-        CommonLogger logger = new CommonLogger("test", level, logFileLevel);
+        CommonLogger logger = new CommonLogger("test", level, logFileLevel, false, true, false);
         logger.clearLogFile();
 
         if (level.equals(Level.OFF) || logFileLevel.equals(Level.OFF)) {
@@ -76,7 +75,7 @@ public class LoggerTest {
 
     private static java.io.File testReloadLoggingToLogFile(Level level, Level logFileLevel) {
 
-        CommonLogger logger = new CommonLogger("test", level, logFileLevel);
+        CommonLogger logger = new CommonLogger("test", level, logFileLevel, false, true, false);
         logger.stopLoggingToFile();
         logger.clearLogFile();
 

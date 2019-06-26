@@ -1,20 +1,22 @@
 package io.yooksi.commons.logger;
 
 import io.yooksi.commons.define.MethodsNotNull;
+import io.yooksi.commons.util.ReflectionUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.appender.AbstractOutputStreamAppender;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.appender.FileAppender;
-import org.apache.logging.log4j.core.config.AppenderRef;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.config.Property;
+import org.apache.logging.log4j.core.appender.FileManager;
+import org.apache.logging.log4j.core.config.*;
 import org.apache.logging.log4j.core.filter.AbstractFilterable;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
+import java.util.NoSuchElementException;
 
 @MethodsNotNull
 @SuppressWarnings({"unused", "WeakerAccess"})
@@ -25,32 +27,59 @@ public final class Log4jUtils {
         throw new UnsupportedOperationException();
     }
 
+    public static String getStandardLogFilePath(String logger) {
+        return "logs/" + logger + ".log";
+    }
+
     /**
      * Create a new {@code ConsoleAppender} instance with default {@code PatternLayout}
      * for the supplied {@code Configuration}.
      */
-    public static ConsoleAppender createNewConsoleAppender(CommonLogger logger, Configuration config) {
+    public static ConsoleAppender createNewConsoleAppender(CommonLogger logger, Layout<? extends java.io.Serializable> layout, Configuration config, boolean initialize) {
 
         logger.getLogger().printf(Level.DEBUG, "Creating new ConsoleAppender for logger %s", logger.name);
 
-        String pattern = PatternLayout.SIMPLE_CONVERSION_PATTERN;
-        PatternLayout layout = PatternLayout.newBuilder().withPattern(pattern).withConfiguration(config).build();
-        return ConsoleAppender.createDefaultAppenderForLayout(layout);
+        ConsoleAppender consoleAppender = ConsoleAppender.newBuilder()
+                .setName(CommonLogger.CONSOLE_APPENDERS[0])
+                .setLayout(layout).build();
+
+        return initialize ? initializeAppender(logger, consoleAppender, logger.logLevel) : consoleAppender;
+    }
+
+    public static ConsoleAppender createNewConsoleAppender(CommonLogger logger, Configuration config, boolean initialize) {
+
+        PatternLayout layout = createPatternLayout(PatternLayout.SIMPLE_CONVERSION_PATTERN, config);
+        return createNewConsoleAppender(logger, layout, config, initialize);
+    }
+
+    public static PatternLayout createPatternLayout(String pattern, Configuration config) {
+        return PatternLayout.newBuilder().withPattern(pattern).withConfiguration(config).build();
     }
 
     /**
      * Create a new {@code FileAppender} instance with the supplied {@code Layout}.
      *
-     * @param consoleLayout logging format the appender will use
+     * @param layout logging format the appender will use
      * @param logFilePath path to the logfile the appender will print to
+     * @throws ExceptionInInitializerError when the {@code logFilePath} is already
+     * associated with an existing {@code AbstractOutputStreamAppender} with a class
+     * different then {@code FileAppender}.
      */
-    public static FileAppender createNewFileAppender(CommonLogger logger, Layout<? extends Serializable> consoleLayout, String logFilePath) {
+    public static FileAppender createNewFileAppender(CommonLogger logger, Layout<? extends Serializable> layout,
+                                                     String logFilePath, boolean initialize) throws ExceptionInInitializerError {
 
         logger.getLogger().printf(Level.DEBUG, "Creating new FileAppender for logger %s", logger.name);
 
-        Property[] properties = { Property.createProperty("level", logger.logFileLevel.name()) };
-        return FileAppender.newBuilder().setName("LogFile").withFileName(logFilePath)
-                .setLayout(consoleLayout).setPropertyArray(properties).build();
+        FileAppender fileAppender = FileAppender.newBuilder()
+                .setName(CommonLogger.FILE_APPENDERS[0])
+                .withFileName(logFilePath)
+                .setLayout(layout).build();
+
+        return initialize ? initializeAppender(logger, fileAppender, logger.logFileLevel) : fileAppender;
+    }
+
+    public static String getLogFileName(AbstractOutputStreamAppender appender) {
+        return ((FileManager)appender.getManager()).getFileName();
     }
 
     /**
@@ -61,11 +90,19 @@ public final class Log4jUtils {
      * @return the existing appender instance from {@code LoggerConfig} or
      * a newly created and initialized appender instance if none already exist.
      */
-    public static ConsoleAppender getOrInitConsoleAppender(CommonLogger logger) {
+    public static Appender getOrInitConsoleAppender(CommonLogger logger) {
 
-        ConsoleAppender consoleAppender = findAppender(ConsoleAppender.class, logger.loggerConfig);
-        return consoleAppender != null ? consoleAppender : initializeAppender(logger,
-                createNewConsoleAppender(logger, logger.context.getConfiguration()), logger.logLevel);
+        Appender consoleAppender = findAppender(CommonLogger.CONSOLE_APPENDERS, logger.loggerConfig);
+        if (consoleAppender == null)
+        {
+            logger.getLogger().warn("Unable to find reachable console appender in LoggerConfig");
+            consoleAppender = findAppender(CommonLogger.CONSOLE_APPENDERS, logger.config);
+            if (consoleAppender != null) {
+                return initializeAppender(logger, consoleAppender, logger.logLevel);
+            }
+            return createNewConsoleAppender(logger, logger.config, true);
+        }
+        else return consoleAppender;
     }
 
     /**
@@ -78,11 +115,19 @@ public final class Log4jUtils {
      * @return the existing appender instance from {@code LoggerConfig} or
      * a newly created and initialized appender instance if none already exist.
      */
-    public static FileAppender getOrInitFileAppender(CommonLogger logger, Layout<? extends Serializable> consoleLayout, String logFilePath) {
+    public static AbstractOutputStreamAppender getOrInitFileAppender(CommonLogger logger, Layout<? extends Serializable> consoleLayout, String logFilePath) {
 
-        FileAppender fileAppender = findAppender(FileAppender.class, logger.loggerConfig);
-        return fileAppender != null ? fileAppender : initializeAppender(logger,
-                createNewFileAppender(logger, consoleLayout, logFilePath), logger.logFileLevel);
+        AbstractOutputStreamAppender fileAppender = findFileAppender(CommonLogger.FILE_APPENDERS, logger.loggerConfig);
+        if (fileAppender == null)
+        {
+            logger.getLogger().warn("Unable to find reachable file appender in LoggerConfig");
+            fileAppender = findFileAppender(CommonLogger.FILE_APPENDERS, logger.config);
+            if (fileAppender != null) {
+                return initializeAppender(logger, fileAppender, logger.logLevel);
+            }
+            return createNewFileAppender(logger, consoleLayout, logFilePath, true);
+        }
+        else return fileAppender;
     }
 
     /**
@@ -96,10 +141,14 @@ public final class Log4jUtils {
     public static <T extends Appender> T initializeAppender(CommonLogger logger, T appender, Level level) {
 
         String appenderClass = appender.getClass().getSimpleName();
-        logger.getLogger().printf(Level.DEBUG, "Initializing new %s for logger %s", appenderClass, logger.name);
+        logger.getLogger().printf(Level.DEBUG, "Initializing %s for logger %s", appenderClass, logger.name);
 
         logger.loggerConfig.addAppender(appender, level, null);
-        appender.start(); return appender;
+
+        if (!appender.isStarted())
+            appender.start();
+
+        return appender;
     }
 
     /**
@@ -115,7 +164,7 @@ public final class Log4jUtils {
     public static <T extends Appender> void updateAppender(CommonLogger logger, T appender, Level level) {
 
         LoggerConfig loggerConfig = logger.loggerConfig;
-        if (findAppender(appender.getClass(), loggerConfig) != null)
+        if (findAppender(new String[]{appender.getName()}, loggerConfig) != null)
         {
             logger.getLogger().printf(Level.DEBUG, "Updating %s %s in LoggerConfig %s to level %s",
                     appender.getClass().getSimpleName(), appender.getName(), loggerConfig.getName(), level);
@@ -136,54 +185,177 @@ public final class Log4jUtils {
      * @return the current {@code LoggerConfig} for the name specified in {@code CommonLogger}
      * or the root logger configuration if no existing {@code LoggerConfig} was found
      */
-    public static LoggerConfig getOrCreateLoggerConfig(CommonLogger logger) {
+    public static LoggerConfig getOrCreateLoggerConfig(CommonLogger logger, boolean additive) {
 
-        Configuration config = logger.context.getConfiguration();
-        if (!config.getLoggers().containsKey(logger.name))
+        if (!logger.config.getLoggers().containsKey(logger.name))
         {
             String log = "Creating new LoggerConfig for %s in current context";
             logger.getLogger().printf(Level.DEBUG, log, logger.name);
-            /*
-             * Don't assign levels here as it will serve no purpose if we are not using the xml file.
-             * This should be done when adding new appenders in #initializeAppender method.
-             */
-            AppenderRef[] refs = new AppenderRef[] {
-                    AppenderRef.createAppenderRef("Console",null/*logger.logLevel*/, null),
-                    AppenderRef.createAppenderRef("LogFile",null/*logger.logFileLevel*/, null)
-            };
+
             /* includeLocation - whether location should be passed downstream
              * Not quite sure what this parameter does so just set it to null...
              */
             String includeLoc = null;
-            LoggerConfig loggerConfig = LoggerConfig.createLogger(false, logger.logLevel,
-                    logger.name, includeLoc, refs,null, config, null);
+            //noinspection ConstantConditions
+            LoggerConfig loggerConfig = LoggerConfig.createLogger(additive, logger.logLevel,
+                    logger.name, includeLoc, new AppenderRef[]{},null, logger.config, null);
 
-            config.addLogger(logger.name, loggerConfig);
+            logger.config.addLogger(logger.name, loggerConfig);
             return loggerConfig;
         }
         else {
             logger.getLogger().printf(Level.DEBUG, "Getting LoggerConfig %s from current context", logger.name);
-            return config.getLoggerConfig(logger.name);
+            return logger.config.getLoggerConfig(logger.name);
         }
     }
 
     /**
-     * @return  the first appender entry with the supplied {@code Class} found in
-     * {@code LoggerConfig} or {@code null} if no entry was found.
+     * @return  the first appender entry with the supplied name found in
+     * {@code Configuration} or {@code null} if no entry was found.
      */
     @SuppressWarnings("unchecked")
-    public static @Nullable <T extends Appender> T findAppender(Class<T> clazz, LoggerConfig config) {
+    public static @Nullable <T extends Appender> T findAppender(String[] names, final LoggerConfig loggerConfig, Class<T> clazz) {
 
-        /* It's important to use an instance of LoggerConfig as opposed to an instance
-         * of Configuration to search for appenders, the formet one has what we need.
-         * Both are located in 'org.apache.logging.log4j.core.config' package.
-         */
-        java.util.Collection<Appender> appenders = config.getAppenders().values();
-        for (Appender appender : appenders) {
-            if (appender.getClass().equals(clazz))
-                return (T) appender;
+        LoggerConfig lookupConfig = loggerConfig;
+
+        for (String name : names) {
+            while (lookupConfig != null)
+            {
+                for (Appender appender : lookupConfig.getAppenders().values()) {
+                    if (appender.getName().equalsIgnoreCase(name) && clazz.isAssignableFrom(appender.getClass()))
+                        return (T) appender;
+                }
+                lookupConfig = lookupConfig.isAdditive() ? lookupConfig.getParent() : null;
+            }
+            /* Reset the search entry point before next name lookup */
+            lookupConfig = loggerConfig;
         }
         return null;
+    }
+    public static @Nullable Appender findAppender(String[] names, LoggerConfig loggerConfig) {
+        return findAppender(names, loggerConfig, Appender.class);
+    }
+    public static @Nullable AbstractOutputStreamAppender findFileAppender(String[] names, LoggerConfig loggerConfig) {
+        return findAppender(names, loggerConfig, AbstractOutputStreamAppender.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static @Nullable <T extends Appender> T findAppender(String[] names, Configuration config, Class<T> clazz) {
+
+        for (String name : names)
+        {
+            for (java.util.Map.Entry<String, Appender> entry : config.getAppenders().entrySet()) {
+                if (name.equalsIgnoreCase(entry.getKey()) && clazz.isAssignableFrom(entry.getValue().getClass()))
+                    return (T) entry.getValue();
+            }
+        }
+        return null;
+    }
+    public static @Nullable Appender findAppender(String[] names, Configuration config) {
+        return findAppender(names, config, Appender.class);
+    }
+    public static @Nullable AbstractOutputStreamAppender findFileAppender(String[] names, Configuration config) {
+        return findAppender(names, config, AbstractOutputStreamAppender.class);
+    }
+
+    public static javafx.util.Pair<AppenderRef, LoggerConfig> findAppenderRef(String[] refs, LoggerConfig loggerConfig) {
+
+        LoggerConfig lookupConfig = loggerConfig;
+
+        for (String ref : refs) {
+            while (lookupConfig != null)
+            {
+                for (AppenderRef appenderRef : lookupConfig.getAppenderRefs()) {
+                    if (appenderRef.getRef().equalsIgnoreCase(ref))
+                        return new javafx.util.Pair<>(appenderRef, lookupConfig);
+                }
+                lookupConfig = lookupConfig.isAdditive() ? lookupConfig.getParent() : null;
+            }
+            /* Reset the search entry point before next name lookup */
+            lookupConfig = loggerConfig;
+        }
+        return new javafx.util.Pair<>(null, null);
+    }
+
+    public static @Nullable Level getApppenderLevel(AppenderRef ref, LoggerConfig loggerConfig) {
+
+        if (ref.getLevel() == null) {
+            while (loggerConfig != null)
+            {
+                if (loggerConfig.getLevel() != null) {
+                    return loggerConfig.getLevel();
+                }
+                loggerConfig = loggerConfig.isAdditive() ? loggerConfig.getParent() : null;
+            }
+            return null;
+        }
+        else return ref.getLevel();
+    }
+
+    public static @Nullable Level getAppenderLevel(AppenderControlArraySet appenderCtrls, Appender appender) throws NoSuchElementException {
+
+        for (AppenderControl control : appenderCtrls.get()) {
+            if (control.getAppenderName().equals(appender.getName()))
+                return ReflectionUtils.readPrivateField(control, "level", Level.class);
+        }
+        throw new NoSuchElementException();
+    }
+
+    public static void updateAppendersForLevel(java.util.Map<Appender, Level> data, CommonLogger logger) {
+
+        AppenderControlArraySet appenderCtrls = ReflectionUtils.readPrivateField(
+                logger.loggerConfig, "appenders", AppenderControlArraySet.class);
+
+        for (java.util.Map.Entry<Appender, Level> entry : data.entrySet())
+        {
+            Appender appender = entry.getKey();
+            Level entryLevel = entry.getValue();
+
+            try {
+                Level appenderLevel = Log4jUtils.getAppenderLevel(appenderCtrls, appender);
+                if (appenderLevel != null) {
+                    if (appenderLevel.intLevel() != entryLevel.intLevel())
+                        Log4jUtils.updateAppender(logger, appender, entryLevel);
+                }
+            }
+            catch (NoSuchElementException e1)
+            {
+                String log = "Unable to find appender level for %s, creating new one";
+                logger.getLogger().printf(Level.DEBUG, log, appender.getName());
+                boolean createdNewAppender = false;
+
+                if (AbstractOutputStreamAppender.class.isAssignableFrom(appender.getClass())) {
+                    for (String file : CommonLogger.FILE_APPENDERS) {
+                        if (appender.getName().equalsIgnoreCase(file))
+                        {
+                            String logFile = getStandardLogFilePath(logger.getName());
+                            createNewFileAppender(logger, appender.getLayout(), logFile, true);
+                            createdNewAppender = true;
+                        }
+                    }
+                    if (!createdNewAppender)
+                    {
+                        log = "Expected for %s to be an instance of AbstractOutputStreamAppender";
+                        Exception e2 = new Exception(appender.getClass().getName());
+                        CommonLogger.LOGGER.error(String.format(log, appender.getName()), e2);
+                    }
+                }
+                else {
+                    for (String console : CommonLogger.CONSOLE_APPENDERS) {
+                        if (appender.getName().equalsIgnoreCase(console)) {
+                            createNewConsoleAppender(logger, appender.getLayout(), logger.config, true);
+                            createdNewAppender = true;
+                        }
+                    }
+                    if (!createdNewAppender)
+                    {
+                        log = "Unable to create new appender %s, name doesn't match expected types";
+                        Exception e2 = new Exception(appender.getClass().getName());
+                        CommonLogger.LOGGER.error(String.format(log, appender.getName()), e2);
+                    }
+                }
+            }
+        }
     }
 
     public static @Nullable <T extends AbstractFilterable> Property getAppenderProperty(T appender, String property) {

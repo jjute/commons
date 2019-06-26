@@ -1,5 +1,6 @@
 package io.yooksi.commons.util;
 
+import io.yooksi.commons.define.LibraryAnnotation;
 import io.yooksi.commons.define.MethodsNotNull;
 import org.jetbrains.annotations.Contract;
 
@@ -11,6 +12,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 @MethodsNotNull
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class AnnotationUtils {
 
     /**
@@ -50,7 +52,7 @@ public class AnnotationUtils {
      * @param attribute complete name <i>(without brackets)</i> of the method to search for
      * @return {@code null} if we were unable to resolve the method
      * @throws NoSuchMethodException if the annotation doesn't have any attribute
-     * that coresponds to given parameters
+     * that corresponds to given parameters
      */
     public static javafx.util.Pair<Method, Object> getAttribute(Annotation annotation, @NotEmpty String attribute) throws NoSuchMethodException {
 
@@ -77,6 +79,14 @@ public class AnnotationUtils {
             throw new IllegalStateException(String.format("%s: Expected to find attribute %s(%s) in annotation %s",
                     e.getClass().getName(), attribute, clazz.getSimpleName(), annotation.getClass().getSimpleName()));
         }
+    }
+
+    /**
+     * @return {@code true} if the supplied annotation belongs to this library.
+     * @see LibraryAnnotation
+     */
+    public static boolean isLibraryAnnotation(Annotation annotation) {
+        return annotation.annotationType().getDeclaredAnnotation(LibraryAnnotation.class) != null;
     }
 
     /**

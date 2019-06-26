@@ -11,7 +11,9 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.TestOnly;
 
+import javax.validation.groups.Default;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -25,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @MethodsNotNull
+@SuppressWarnings({"unused", "WeakerAccess"})
 public final class BeanValidator {
 
     private static final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -43,21 +46,34 @@ public final class BeanValidator {
     private static final javafx.util.Pair<Pattern, Integer> PARSE_REGEX = new Pair<>(
             Pattern.compile(String.format("(?:\\%s)([a-zA-Z0-9_-]*)", REGEX_KEY)), 1);
 
+    /**
+     * This set contains a list of recently processed constraint violations.
+     * It is intended and should be used only for testing purposes.
+     */
+    @TestOnly
+    public static final java.util.Set <ConstraintViolation> recentViolations = new java.util.HashSet<>();
+
     /* Make the constructor private to disable instantiation */
     private BeanValidator() {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * @param <T> class of the object being validated
+     * Validate and process all constraints on object.
+     *
+     * @param groups the group or list of groups targeted for validation (defaults to {@link Default})
+     * @param object instance of the object to validate
+     * @param <T> object type being validated
      * @return object being validated <i>(for convenience)</i>
      * @throws javax.validation.UnexpectedTypeException No validator could be found for constraint
      * given to object being validated. This happens when the object data type doesn't match the
      * data type the validator was intended to validate.
+     * @see #processViolation(ConstraintViolation)
      */
-    public static <T> T validate(T object) {
+    public static <T> T validate(T object, Class<?>...groups) {
 
-        for (ConstraintViolation violation : validator.validate(object)) {
+        LibraryLogger.debug("Validating object %s", object);
+        for (ConstraintViolation violation : validator.validate(object, groups)) {
             processViolation(violation);
         }
         return object;
@@ -65,7 +81,8 @@ public final class BeanValidator {
 
     /**
      * <p>Validate method parameters with Java Bean validation.</p>
-     * Usually called from a method interception system.
+     * <p>Usually called from a method interception system.</p>
+     * <i>Note that {@code private} methods <b>cannot</b> be validated.</i>
      *
      * @param method the method for which the parameter constraints is validated
      * @param object the object on which the method to validate is invoked
@@ -81,8 +98,9 @@ public final class BeanValidator {
     }
 
     /**
-     * Called from a method interception system to validate method parameters,
-     * return value and the state of the class instance after it's invocation.
+     * <p>Called from a method interception system to validate method parameters,
+     * return value and the state of the class instance after it's invocation.</p>
+     * <i>Note that {@code private} methods <b>cannot</b> be validated.</i>
      *
      * @param mi method joinpoint given to an interceptor upon method-call
      * @return method invocation return value
@@ -100,14 +118,28 @@ public final class BeanValidator {
          * Now validate the class instance that holds the method to see if
          * all fields are still complying with annotation constraints.
          * However do this only if the method is not explicitly annotated
-         * with a contract that gurantees operation immutability.
+         * with a contract that guarantees operation immutability.
          */
         Contract contract = mi.getMethod().getDeclaredAnnotation(Contract.class);
         if (contract == null || !AnnotationUtils.isMethodContractPure(contract)) {
             validate(mi.getThis());
         }
-        // TODO: Validate return value here as well
+        validateMethodReturnValue(mi.getThis(), mi.getMethod(), result);
         return result;
+    }
+
+    /**
+     * Validate and process all return value constraints of the given method.
+     *
+     * @param object the object on which the method to validate is invoked
+     * @param method the method for which the return value constraints is validated
+     * @param value the value returned by the given method
+     */
+    private static void validateMethodReturnValue(Object object, Method method, Object value) {
+
+        for (ConstraintViolation violation : exeValidator.validateReturnValue(object, method, value)) {
+            processViolation(violation);
+        }
     }
 
     /**
@@ -197,34 +229,42 @@ public final class BeanValidator {
      */
     private static void processViolation(ConstraintViolation violation) {
 
+        BeanValidator.recentViolations.add(violation);
+
         Object value = violation.getInvalidValue();
         Object field = violation.getPropertyPath();
         String message = violation.getMessage();
+        Level level = Level.ERROR;
 
         Annotation annotation = violation.getConstraintDescriptor().getAnnotation();
-        java.util.Map<String, Object> attributes = AnnotationUtils.getAttributes(annotation);
-        String sLevel = AnnotationUtils.getAttributeValue(annotation, "level", String.class);
-        Level level = Level.toLevel(sLevel, Level.ERROR);
-
-        /* Parse our annotation violation message and replace all words marked with the regex key
-         * with an annotation attribute value that holds the same name.
+        /*
+         * Process violation message and level only if the
+         * annotation belongs to commons library.
          */
-        Matcher matcher = PARSE_REGEX.getKey().matcher(message);
-        while (matcher.find())
+        if (AnnotationUtils.isLibraryAnnotation(annotation))
         {
-            String group = matcher.group(PARSE_REGEX.getValue());
-            Object oReplacement = group.equals("value") ? value : attributes.get(group);
+            java.util.Map<String, Object> attributes = AnnotationUtils.getAttributes(annotation);
+            String sLevel = AnnotationUtils.getAttributeValue(annotation, "level", String.class);
+            level = Level.toLevel(sLevel, level);
 
-            String sReplacement = StringUtils.smartQuote(oReplacement);
-            message = message.replace(REGEX_KEY + group, sReplacement);
+            /* Parse our annotation violation message and replace all words marked with the regex key
+             * with an annotation attribute value that holds the same name.
+             */
+            Matcher matcher = PARSE_REGEX.getKey().matcher(message);
+            while (matcher.find()) {
+                String group = matcher.group(PARSE_REGEX.getValue());
+                Object oReplacement = group.equals("value") ? value : attributes.get(group);
+
+                String sReplacement = StringUtils.smartQuote(oReplacement);
+                message = message.replace(REGEX_KEY + group, sReplacement);
+            }
         }
-
         /* Print the violation message to console with the appropriate level.
          * Also print an exception stack trace as a debug log
          */
         LibraryLogger.printf(level, message);
         LibraryLogger.debug(message, new Exception(String.format("Field '%s' with value '%s' has violated " +
-                "annotation constrains of %s", field, value, annotation.annotationType().getName())));
+                "annotation constrains of %s", field, value, annotation.annotationType().getSimpleName())));
     }
 
     private static <T> java.util.Set<ConstraintViolation<T>> validateConstructorParams(Constructor<T> c, Object...p) {
