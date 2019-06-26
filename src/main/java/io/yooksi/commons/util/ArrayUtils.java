@@ -6,7 +6,7 @@ import javax.validation.constraints.Positive;
 import java.lang.reflect.Array;
 
 @MethodsNotNull
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class ArrayUtils extends org.apache.commons.lang3.ArrayUtils {
 
     /**
