@@ -1,6 +1,7 @@
 package io.yooksi.commons.util;
 
 import io.yooksi.commons.define.MethodsNotNull;
+import org.jetbrains.annotations.Contract;
 
 import javax.validation.constraints.NotEmpty;
 import java.lang.annotation.Annotation;
@@ -41,35 +42,50 @@ public class AnnotationUtils {
     }
 
     /**
-     * <p>Get annotation's method instance and return value in a pair.</p>
+     * <p>Get annotation's attribute and return value in a pair.</p>
      * Since the user can get the value from method instance himself this is
      * done purely for convenience purposes.
      *
      * @param annotation instance of the annotation to get the method from
      * @param attribute complete name <i>(without brackets)</i> of the method to search for
      * @return {@code null} if we were unable to resolve the method
+     * @throws NoSuchMethodException if the annotation doesn't have any attribute
+     * that coresponds to given parameters
      */
-    public static javafx.util.Pair<Method, Object> getAttribute(Annotation annotation, @NotEmpty String attribute) {
+    public static javafx.util.Pair<Method, Object> getAttribute(Annotation annotation, @NotEmpty String attribute) throws NoSuchMethodException {
 
         try {
             Method object = annotation.annotationType().getDeclaredMethod(attribute);
             return new javafx.util.Pair<>(object, object.invoke(annotation, (Object[]) null));
         }
-        // TODO: Add first exception to method signature
-        catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        catch (IllegalAccessException | InvocationTargetException e) {
             throw new IllegalStateException("Unable to get method for annotation " + annotation.getClass().getSimpleName(), e);
         }
     }
     @SuppressWarnings("unchecked")
     public static <T> T getAttributeValue(Annotation annotation, String attribute, Class<T> clazz) {
 
-        javafx.util.Pair<Method, Object> data = getAttribute(annotation, attribute);
-        Object value = data != null ? data.getValue() : null;
-        if (!clazz.isInstance(value)) {
-            throw new IllegalStateException(String.format("Expected to find attribute %s(%s) in annotation %s",
-                    attribute, clazz.getSimpleName(), annotation.getClass().getSimpleName()));
+        Object value;
+        try {
+            value = getAttribute(annotation, attribute).getValue();
+            if (!clazz.isInstance(value)) {
+                throw new IllegalArgumentException();
+            }
+            else return (T) value;
         }
-        return (T) value;
+        catch (NoSuchMethodException | IllegalArgumentException e) {
+            throw new IllegalStateException(String.format("%s: Expected to find attribute %s(%s) in annotation %s",
+                    e.getClass().getName(), attribute, clazz.getSimpleName(), annotation.getClass().getSimpleName()));
+        }
+    }
+
+    /**
+     * @return {@code true} only if the IntelliJ Contract annotation instance
+     * passed as a method parameter guarantees operation immutability <i>(pure = true)</i>
+     */
+    @Contract(pure = true)
+    public static boolean isMethodContractPure(Contract contract) {
+        return getAttributeValue(contract, "pure", boolean.class);
     }
 
     /**
