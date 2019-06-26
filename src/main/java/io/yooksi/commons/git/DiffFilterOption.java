@@ -70,6 +70,7 @@ public class DiffFilterOption extends ParamCLOption {
         /**
          * Designate types of files to include in a diff.
          */
+        @Contract("_ -> this")
         public Builder include(Type... types) {
             for (Type type : types) {
                 map.put(type, true);
@@ -79,6 +80,7 @@ public class DiffFilterOption extends ParamCLOption {
         /**
          * Designate types of files to exclude from a diff.
          */
+        @Contract("_ -> this")
         public Builder exclude(Type... types) {
             for (Type type : types) {
                 map.put(type, false);
@@ -90,6 +92,7 @@ public class DiffFilterOption extends ParamCLOption {
          * if there is at least one file that matches other criteria.
          * Read {@link DiffFilterOption#allOrNone} documentation for more information
          */
+        @Contract("_ -> this")
         public Builder setAllOrNone(boolean state) {
             allOrNone = state;
             return this;
