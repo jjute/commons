@@ -28,7 +28,7 @@ public class AOPProxy {
      */
     public static <T> T createFor(Object T) {
 
-        CommonLogger.getLogger().debug("Creating new AOP proxy for object %s", T);
+        CommonLogger.get().debug("Creating new AOP proxy for object %s", T);
         ProxyFactory pf = new ProxyFactory(T);
         pf.addAdvice((MethodInterceptor) mi -> {
 
@@ -36,7 +36,7 @@ public class AOPProxy {
             Object[] params = mi.getArguments();    /* list of method arguments     */
             Object target = mi.getThis();           /* target object being proxied  */
 
-            CommonLogger.getLogger().debug("Method %s (args: %s) was intercepted while on it's " +
+            CommonLogger.get().debug("Method %s (args: %s) was intercepted while on it's " +
                     "way to target %s", method.getName(), java.util.Arrays.toString(params), target);
 
             return BeanValidator.validateMethod(mi);
