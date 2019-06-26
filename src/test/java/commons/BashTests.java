@@ -4,8 +4,8 @@ import io.yooksi.commons.bash.BashScript;
 import io.yooksi.commons.bash.GitBash;
 import io.yooksi.commons.bash.RedirectOutput;
 import io.yooksi.commons.bash.UnixPath;
+import io.yooksi.commons.util.FileUtils;
 import io.yooksi.commons.util.StringUtils;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +47,7 @@ public class BashTests {
 
         String output = StringUtils.normalizeEOL(runBashScript(logPath, script));
 
-        File tempTxt = new File(FileUtils.getTempDirectory().toPath().resolve("compare.txt").toString());
+        File tempTxt = FileUtils.getTempFile("compare.txt");
         FileUtils.writeLines(tempTxt, Arrays.asList(logText));
         Assertions.assertEquals(FileUtils.readFileToString(tempTxt, Charset.defaultCharset()).trim(), output.trim());
     }

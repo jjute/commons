@@ -131,6 +131,7 @@ public class BashScript {
          * @param cmd first string to append to the current command
          * @param args array of strings to append in natural order
          */
+        @SuppressWarnings("SameParameterValue")
         private Builder appendQuoted(String cmd, String... args) {
 
             if (command.length() == 0) {
@@ -209,5 +210,8 @@ public class BashScript {
     }
     public java.io.File getFile() {
         return file;
+    }
+    public List<String> getCommands() {
+        return commands;
     }
 }
