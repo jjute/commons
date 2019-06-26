@@ -10,13 +10,41 @@ import org.apache.logging.log4j.core.config.*;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class CommonLogger extends AbsCommonLogger {
 
+    /** Name of the internal log4j2 configuration file. */
+    private static final String CONFIG_FILE = "log4j2-cl.xml";
+
+    /** Internal log4j2 context for the current classpath. */
     private static final LoggerContext CONTEXT = getInternalContext();
 
+    /**
+     * <p>Will be set to {@code false} after the internal logger is done constructing.</p>
+     * Useful for when we want to check if we are able to use the internal logging yet.
+     */
+    private static boolean isInitializing = true;
+
     /** Used for internal class logging, particularly by the class constructor */
-    static final CommonLogger LOGGER = new CommonLogger("CommonLogger", true);
+    static final CommonLogger LOGGER = new CommonLogger();
 
     private final LoggerControl loggerControl;
     private final Logger logger;
+
+    /* Internal constructor used only by LOGGER var */
+    private CommonLogger() {
+
+        this("CommonLogger", true);
+        isInitializing = false;
+    }
+
+    /**
+     * Constructor for internal loggers <b>ONLY</b>.
+     * @param clearLogFile should the logfile be cleared after construction
+     */
+    CommonLogger(String name, boolean clearLogFile) {
+
+        logger = CONTEXT.getLogger(name);
+        loggerControl = new LoggerControl(name, CONTEXT).withAppenders("");
+        if (clearLogFile) clearLogFile();
+    }
 
     /**
      * <p>Construct a new instance of this custom Log4j wrapper.</p>
@@ -30,11 +58,19 @@ public class CommonLogger extends AbsCommonLogger {
      *     but different console or file log levels the existing logger will
      *     be used and the appropriate appenders will be updated.</li>
      * </ul>
+     * @param name {@code LoggerConfig} name to find or create
      * @param logLevel console logging level
+     * @param logFilePath path to the dedicated log file we want to output logging to.
+     *                    An empty string will disable logging to a dedicated file.
+     * @param fileLevel file logging level
+     * @param currentContext whether to use an internal or external context, with internal context being tied
+     *                       to our local {@code log4j2} xml file and defined in {@link #CONTEXT}
+     * @param additive should log events be propagated to {@code LoggerConfig} parents.
+     * @see LoggerControl#create(String, Level, Level, boolean, boolean)
      */
-    public CommonLogger(String name, Level logLevel, String logFile, Level fileLevel, boolean currentContext, boolean additive) {
+    public CommonLogger(String name, Level logLevel, String logFilePath, Level fileLevel, boolean currentContext, boolean additive) {
 
-        loggerControl = LoggerControl.create(name, logLevel, fileLevel, currentContext, additive).withAppenders(logFile);
+        loggerControl = LoggerControl.create(name, logLevel, fileLevel, currentContext, additive).withAppenders(logFilePath);
         this.logger = loggerControl.getLogger();
 
         loggerControl.update();
@@ -42,39 +78,62 @@ public class CommonLogger extends AbsCommonLogger {
     }
 
     /**
-     * Overload constructor for when we don't want to log to file,
-     * or when we want the file and console logging levels to be the same.
+     * Overload constructor for when we don't want to log to file or
+     * we want to log to a file with a standard log file path.
+     *
+     * @param logLevel console logging threshold level
+     * @param logFileLevel file logging threshold level
+     * @param dedicatedFile whether to use a dedicated logging file with standard path.
+     *
+     * @see #CommonLogger(String, Level, String, Level, boolean, boolean)
+     * @see Log4jUtils#getStandardLogFilePath(String)
+     */
+    public CommonLogger(String logger, Level logLevel, Level logFileLevel, boolean dedicatedFile, boolean currentContext, boolean additive) {
+        this(logger, logLevel, dedicatedFile ? Log4jUtils.getStandardLogFilePath(logger) : "", logFileLevel, currentContext, additive);
+    }
+
+    /**
+     * Overload constructor for when we don't want to log to file or when we want
+     * the file and console logging levels to be the same and are too lazy to explicitly write so.
+     *
+     * @param logLevel logging level to use for both console and file
+     * @param dedicatedFile whether to use a dedicated logging file with standard path.
+     *
+     * @see #CommonLogger(String, Level, String, Level, boolean, boolean)
+     * @see Log4jUtils#getStandardLogFilePath(String)
+     */
+    public CommonLogger(String logger, Level logLevel, boolean dedicatedFile, boolean currentContext, boolean additive) {
+        this(logger, logLevel, dedicatedFile ? Log4jUtils.getStandardLogFilePath(logger) : "", logLevel, currentContext, additive);
+    }
+
+    /**
+     * Overload constructor for when we want to log to a dedicated file with a
+     * specific path and use the same logging level for both console and file
+     *
+     * @param logLevel logging level to use for both console and file
+     * @param logFilePath dedicated log file path to output to
      *
      * @see #CommonLogger(String, Level, String, Level, boolean, boolean)
      */
-    public CommonLogger(String logger, Level logLevel, Level logFileLevel, boolean dedicatedFile, boolean currentContext, boolean additive) {
-        this(logger, logLevel, dedicatedFile ? logger : "", logFileLevel, currentContext, additive);
+    public CommonLogger(String logger, Level logLevel, String logFilePath, boolean currentContext, boolean additive) {
+        this(logger, logLevel, logFilePath, logLevel, currentContext, additive);
     }
 
-    public CommonLogger(String logger, Level logLevel, boolean dedicatedFile, boolean currentContext, boolean additive) {
-        this(logger, logLevel, dedicatedFile ? logger : "", logLevel, currentContext, additive);
-    }
-
-    public CommonLogger(String logger, Level logLevel, String logFile, boolean currentContext, boolean additive) {
-        this(logger, logLevel, logFile, logLevel, currentContext, additive);
-    }
-
-    CommonLogger(String name, boolean clearLogFile) {
-
-        loggerControl = new LoggerControl(name, Level.ALL, CONTEXT).withAppenders("");
-        logger = loggerControl.getLogger();
-        if (clearLogFile) clearLogFile();
-    }
-
-    public Level getLevel(LoggerLevels.Type type) {
-        return loggerControl.getLevel(type);
-    }
-
-    private static LoggerContext getInternalContext() {
+    /**
+     * @return a {@code LoggerContext} for our internal {@link #CONFIG_FILE}.
+     *
+     * @throws IllegalStateException if the return value from {@link Class#getResource(String)}
+     * is {@code null} which means the internal configuration file was not found or the value
+     * is not formatted strictly according to RFC2396 and cannot be converted to a URI.
+     */
+    private static LoggerContext getInternalContext() throws IllegalStateException {
 
         ClassLoader cld = CommonLogger.class.getClassLoader();
-        java.net.URL configPath = CommonLogger.class.getResource("/log4j2-cl.xml");
+        java.net.URL configPath = CommonLogger.class.getResource("/" + CONFIG_FILE);
         try {
+            if (configPath == null) {
+               throw new IllegalStateException("Unable to find internal log4j2 configuration file.");
+            }
             /* It's imperative to get context with the currentContext parameter set to true
              * otherwise we risk the context becoming global and applying to other non-related loggers
              *
@@ -86,6 +145,14 @@ public class CommonLogger extends AbsCommonLogger {
         catch (java.net.URISyntaxException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    static boolean isInitializing() {
+        return isInitializing;
+    }
+
+    public Level getLevel(LoggerLevels.Type type) {
+        return loggerControl.getLevel(type);
     }
 
     /**
@@ -113,10 +180,18 @@ public class CommonLogger extends AbsCommonLogger {
         return logger != null ? logger : LOGGER.logger;
     }
 
+    /**
+     * @return a log {@code File} instance from file appender output path.
+     *        <i>Note that the return value is <b>not guaranteed</b> to be an existing file.</i>
+     */
     public java.io.File getLogFile() {
         return new java.io.File(loggerControl.getLogFilePath());
     }
 
+    /**
+     * Deletes the contents of a log file used by a registered file appender.
+     * @see #getLogFile()
+     */
     public void clearLogFile() {
         /*
          * Currently used only by tests but is useful to all users
@@ -133,17 +208,16 @@ public class CommonLogger extends AbsCommonLogger {
     }
 
     /**
-     * Update the logger {@code FileAppender} level to match
-     * the method parameter level. If all you want is to start or stop
-     * logging to file you should use one of the following methods:
-     * <ul style="list-style-type:none">
-     *     <li>{@link #startLoggingToFile()}</li>
-     *     <li>{@link #stopLoggingToFile()}</li>
-     * </ul>
+     * Update the logger {@code FileAppender} level to match the method parameter level.
+     * To simply start or stop logging to log-file consider using these methods:
+     *
+     * @see #startLoggingToFile()
+     * @see #stopLoggingToFile()
      */
     public void setLogFileLevel(Level level) {
         loggerControl.updateAppender(AppenderType.FILE, level, null);
     }
+
     /**
      * Update the logger {@code FileAppender} level to match the
      * default logfile level for this wrapper. This method is intended
@@ -159,10 +233,18 @@ public class CommonLogger extends AbsCommonLogger {
         loggerControl.startAppender(AppenderType.FILE);
     }
 
+    /**
+     * Removes a registered {@link AppenderType#FILE} from the current {@code LoggerConfig}.
+     * @see LoggerControl#stopAppender(AppenderType)
+     */
     public void stopLoggingToFile() {
         loggerControl.stopAppender(AppenderType.FILE);
     }
 
+
+    /**
+     * Print each given log as separate log event with the provided level.
+     */
     public void wrap(Level level, String...logs) {
 
         for (String log : logs) {

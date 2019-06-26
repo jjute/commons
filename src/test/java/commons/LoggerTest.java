@@ -3,15 +3,23 @@ package commons;
 import io.yooksi.commons.logger.CommonLogger;
 import io.yooksi.commons.logger.LibraryLogger;
 import org.apache.logging.log4j.Level;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import java.io.IOException;
 
-//@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SuppressWarnings("WeakerAccess")
 public class LoggerTest {
 
-    @Test
+    @Test @Order(1)
+    public void testLoggingToLogFileSimple() throws IOException {
+        TestUtils.assertTextFileLineCount(testLoggingToLogFile(Level.TRACE, Level.INFO), 1);
+    }
+
+    @Test @Order(2)
     public void testLibraryLogging() throws IOException {
 
         for (Level logLvl : Level.values())
@@ -29,12 +37,7 @@ public class LoggerTest {
 
     }
 
-    @Test
-    public void testLoggingToLogFileSimple() throws IOException {
-        TestUtils.assertTextFileLineCount(testLoggingToLogFile(Level.TRACE, Level.INFO), 1);
-    }
-
-    @Test
+    @Test @Order(3)
     @SuppressWarnings("unused")
     public void testLoggingToLogFileMultiLoggers() throws IOException {
 
@@ -47,32 +50,26 @@ public class LoggerTest {
         TestUtils.assertTextFileLineCount(test3.getLogFile(), 1);
     }
 
-    @Test
+    @Test @Order(4)
     public void testLoggingToLogFileAllLevels() throws IOException {
 
         for (Level logLvl : Level.values()) {
             for (Level logFileLvl : Level.values())
             {
-                boolean isLevelOff = logFileLvl.equals(Level.OFF) || logLvl.equals(Level.OFF);
-                boolean canLogToFile = logLvl.intLevel() >= logFileLvl.intLevel();
-
                 java.io.File logFile = testLoggingToLogFile(logLvl, logFileLvl);
-                TestUtils.assertTextFileLineCount(logFile, !isLevelOff && canLogToFile ? 1 : 0);
+                TestUtils.assertTextFileLineCount(logFile, 1);
             }
         }
     }
 
-    @Test
+    @Test @Order(5)
     public void testReloadLoggingToLogFile() throws IOException {
 
         for (Level logLvl : Level.values()) {
             for (Level logFileLvl : Level.values())
             {
-                boolean isLevelOff = logFileLvl.equals(Level.OFF) || logLvl.equals(Level.OFF);
-                boolean canLogToFile = logLvl.intLevel() >= logFileLvl.intLevel();
-
                 java.io.File logFile = testReloadLoggingToLogFile(logLvl, logFileLvl);
-                TestUtils.assertTextFileLineCount(logFile, !isLevelOff && canLogToFile ? 1 : 0);
+                TestUtils.assertTextFileLineCount(logFile,1);
             }
         }
     }
@@ -83,12 +80,8 @@ public class LoggerTest {
         CommonLogger logger = new CommonLogger("test", level, logFileLevel, true, true, false);
         logger.clearLogFile();
 
-        if (level.equals(Level.OFF) || logFileLevel.equals(Level.OFF)) {
-            logger.printf(Level.INFO, "TLTLF: Printing INFO to logfile with CommonLogger at level %s", level);
-        }
-        else {
-            logger.printf(logFileLevel, "TLTLF: Printing %s to logfile with CommonLogger at level %s", logFileLevel.name(), level);
-        }
+        logger.printf(logFileLevel, "TLTLF: Printing %s to logfile with CommonLogger at level %s", logFileLevel.name(), level);
+
         return logger.getLogFile();
     }
 
@@ -99,17 +92,12 @@ public class LoggerTest {
         logger.stopLoggingToFile();
         logger.clearLogFile();
 
-        if (level.equals(Level.OFF) || logFileLevel.equals(Level.OFF))
-        {
-            logger.printf(Level.INFO, "TRTLF: Printing INFO to logfile with CommonLogger at level %s", level);
-            logger.setLogFileLevel(logFileLevel);
-            logger.printf(Level.INFO, "TRTLF: Printing INFO to logfile with CommonLogger at level %s", level);
-        }
-        else {
-            logger.printf(logFileLevel, "TRTLF: Printing %s to logfile with CommonLogger at level %s", logFileLevel.name(), level);
-            logger.setLogFileLevel(logFileLevel);
-            logger.printf(logFileLevel, "TRTLF: Printing %s to logfile with CommonLogger at level %s", logFileLevel.name(), level);
-        }
+        logger.printf(logFileLevel, "TRTLF: Printing %s to logfile with CommonLogger at level %s", logFileLevel.name(), level);
+
+        logger.startLoggingToFile();
+
+        logger.printf(logFileLevel, "TRTLF: Printing %s to logfile with CommonLogger at level %s", logFileLevel.name(), level);
+
         return logger.getLogFile();
     }
 }

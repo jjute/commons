@@ -2,6 +2,7 @@ package io.yooksi.commons.logger;
 
 import org.apache.logging.log4j.Level;
 
+@SuppressWarnings("unused")
 public class LoggerLevels {
 
     public enum Type {
@@ -12,7 +13,7 @@ public class LoggerLevels {
         Type(int i) { this.i = i; }
     }
 
-    private Level[] levels = new Level[Type.values().length];
+    private final Level[] levels = new Level[Type.values().length];
 
     public LoggerLevels(Level logger, Level console, Level file) {
 
@@ -26,9 +27,6 @@ public class LoggerLevels {
         levels[Type.LOGGER.i] = logger;
         levels[Type.CONSOLE.i] = console;
         levels[Type.FILE.i] = file;
-    }
-    public LoggerLevels(Level level) {
-        this(level, level, level);
     }
 
     public Level getLevel(AppenderType type) {

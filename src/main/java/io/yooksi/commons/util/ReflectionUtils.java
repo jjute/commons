@@ -10,6 +10,7 @@ import javax.validation.constraints.Positive;
 import java.lang.reflect.Field;
 
 @MethodsNotNull
+@SuppressWarnings("unused")
 public class ReflectionUtils {
 
     /**

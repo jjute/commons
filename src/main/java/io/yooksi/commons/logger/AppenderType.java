@@ -3,11 +3,24 @@ package io.yooksi.commons.logger;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.appender.AbstractOutputStreamAppender;
 
+/**
+ * Appender types hold extended information about implementation classes.
+ * They can be used to infer generic types, map {@code AppenderData} objects
+ * and assign appropriate levels in {@code LoggerControl}.
+ *
+ * @param <T> Appender implementation type
+ */
 public final class AppenderType<T extends Appender> {
 
+    /**
+     * Represents an appender that is used to print to console.
+     */
     public static final AppenderType<Appender> CONSOLE = new AppenderType<>
             (Appender.class, LoggerLevels.Type.CONSOLE, "ConsoleAppender", "CLConsole", "Console");
 
+    /**
+     * Represents an appender that is used to print to a log file.
+     */
     public static final AppenderType<AbstractOutputStreamAppender> FILE = new AppenderType<>
             (AbstractOutputStreamAppender.class, LoggerLevels.Type.FILE, "FileAppender", "CLFile", "File");
 
@@ -24,7 +37,11 @@ public final class AppenderType<T extends Appender> {
         this.names = names;
     }
 
-    public InitializationPackage.Builder<T> getBuilder(LoggerControl control) {
+    /**
+     * Helper method to create a package builder for this type.
+     * @see InitializationPackage#create(LoggerControl, AppenderType)
+     */
+    InitializationPackage.Builder<T> getBuilder(LoggerControl control) {
         return InitializationPackage.create(control, this);
     }
     public Class<T> getTypeClass() {
