@@ -16,6 +16,7 @@ import java.util.*;
  * @author krosenvold
  * @see <a href="https://github.com/krosenvold/struts2/tree/master/xwork-core">strut2 on Github</a>
  */
+@SuppressWarnings({"unused", "WeakerAccess", "SpellCheckingInspection"})
 public class ClassLoaderUtil {
 
     /**
@@ -35,7 +36,7 @@ public class ClassLoaderUtil {
      */
     public static Iterator<URL> getResources(String resourceName, Class callingClass, boolean aggregate) throws IOException {
 
-        AggregateIterator<URL> iterator = new AggregateIterator<URL>();
+        AggregateIterator<URL> iterator = new AggregateIterator<>();
 
         iterator.addEnumeration(Thread.currentThread().getContextClassLoader().getResources(resourceName));
 
@@ -64,10 +65,10 @@ public class ClassLoaderUtil {
      */
     static class AggregateIterator<E> implements Iterator<E> {
 
-        LinkedList<Enumeration<E>> enums = new LinkedList<Enumeration<E>>();
+        final LinkedList<Enumeration<E>> enums = new LinkedList<>();
+        final Set<E> loaded = new HashSet<>();
         Enumeration<E> cur = null;
         E next = null;
-        Set<E> loaded = new HashSet<E>();
 
         public AggregateIterator<E> addEnumeration(Enumeration<E> e) {
             if (e.hasMoreElements()) {

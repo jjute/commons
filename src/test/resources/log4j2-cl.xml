@@ -3,21 +3,27 @@
     <Appenders>
 
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] [%logger{1}] - %msg%n"/>
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] [%logger{1}]: %msg%n"/>
         </Console>
 
-        <File name="File" fileName="logs/ykc-internal.log" immediateFlush="true">
-          <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] [%logger{1}] - %msg%n"/>
+        <File name="File" fileName="logs/ykcommons.log" immediateFlush="true">
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] [%logger{1}]: %msg%n"/>
         </File>
 
     </Appenders>
     <Loggers>
 
-        <Logger name="ykc-internal" level="ALL" additivity="false">
+        <Logger name="CommonLogger" level="ALL" additivity="false">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
         </Logger>
 
-        <Root level="DEBUG" additivity="false">
+        <Logger name="YKCommons" level="ALL" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Logger>
+
+        <Root level="DEBUG">
             <AppenderRef ref="Console"/>
         </Root>
 

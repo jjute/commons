@@ -1,10 +1,12 @@
 package io.yooksi.commons.util;
 
 import io.yooksi.commons.define.MethodsNotNull;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
+import javax.validation.constraints.Positive;
 import java.lang.reflect.Field;
 
 @MethodsNotNull
@@ -99,6 +101,7 @@ public class ReflectionUtils {
                     "access is private and method was instructed not to force access");
 
             throw new IllegalStateException(String.format(log, fieldName), e);
+
         }
     }
 
@@ -108,5 +111,78 @@ public class ReflectionUtils {
      */
     public static <T> @Nullable T readPrivateField(Object target, String fieldName, Class<T> clazz) {
         return readField(target, fieldName, true, clazz);
+    }
+
+    /**
+     * <p>Returns the {@code Nth} unique class caller from the current
+     * thread's context class loader starting from the calling class
+     * of the method that called us:</p>
+     * <ul style="list-style-type:none">
+     *     <li>{@code index 0} - returns the class that is calling this method.</li>
+     *     <li>{@code index 1} - returns the actual caller of that class.</li>
+     * </ul>
+     * @param index {@code Nth} unique calling class to return
+     * from the current thread stacktrace starting from the
+     * calling class of the method that called us.
+     *
+     * @return {@code Nth} unique calling class resolved from the
+     * current thread stacktrace with {@code N} being defined by
+     * the {@code index} method parameter.
+     *
+     * @throws IllegalArgumentException when the {@code index}
+     * integer parameter breaks the {@link Positive} validation
+     * constraint by having a negative value.
+     *
+     * @throws IndexOutOfBoundsException when the calling class with
+     * passed {@code index} in stacktrace could not be found.
+     *
+     * @throws IllegalStateException when the calling class name was
+     * found in stacktrace but the class itself was unable to be resolved.
+     * The exception cause will be {@link ClassNotFoundException}.
+     */
+    public static Class getCallerClass(@Positive final int index) {
+
+        if (index < 0)
+            throw new IllegalArgumentException("Parameter index needs to be a positive value");
+
+        StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
+
+        try {
+            String callingClass = stElements[1].getClassName();
+            int searchIndex = index + 1;
+            /*
+             * The first two elements of stacktrace will always be
+             * java.lang.Thread and the current class that holds the method
+             * so access with index at 2 to get the caller of the calling method
+             */
+            for (int i = 2; i < stElements.length; i++)
+            {
+                if (!stElements[i].getClassName().equals(callingClass))
+                {
+                    if ((searchIndex -= 1) == 0) {
+                        return ClassUtils.getClass(stElements[i].getClassName(), false);
+                    }
+                    else callingClass = stElements[i].getClassName();
+                }
+            }
+            throw new IndexOutOfBoundsException("Unable to find caller class in current" +
+                    " thread stacktrace when searching with index " + index);
+        }
+        /* This should never happen as all class names listed in the
+         * stacktrace are considered real callers and need to exist
+         */
+        catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Unable to find caller class, fatal error occurred!", e);
+        }
+    }
+
+    /**
+     * Helper method to determine the actual class caller.
+     *
+     * @return the caller of the class calling this method.
+     * @see #getCallerClass(int)
+     */
+    public static Class getCallerClass() {
+        return getCallerClass(1);
     }
 }
