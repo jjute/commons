@@ -8,33 +8,51 @@ import org.apache.logging.log4j.Logger;
 import javax.validation.constraints.NotEmpty;
 
 @MethodsNotNull
+@SuppressWarnings("unused")
 public class CommonLogger extends ICommonLogger {
 
-    // TODO: Document this map and what exactly it STORES
-    private static java.util.Map<Thread, ICommonLogger> map = new java.util.HashMap<>();
-    private static CommonLogger defaultInstance = new CommonLogger();
+    /* Used for internal library logging */
+    private static CommonLogger instance = new CommonLogger();
 
-    public static <T extends  CommonLogger> T create(@NotEmpty String loggerName, Class<T> implClass) {
+    /**
+     * Create a new {@code CommonLogger} implementation.
+     *
+     * @param name the Logger name used to create a new log4j
+     * @param implClass implementation class to instantiate
+     * @param <T> {@link CommonLogger} subclass
+     * @return newly instantiated implementation
+     * @throws IllegalStateException if the class has no nullary constructor
+     * or if the class or its nullary constructor is not accessible.
+     */
+    public static <T extends CommonLogger> T create(@NotEmpty String name, Class<T> implClass) {
 
         try {
             T impl = implClass.newInstance();
-            impl.logger = LogManager.getLogger(loggerName);
-            map.put(Thread.currentThread(), impl);
+            impl.logger = LogManager.getLogger(name);
+            instance.debug("Created new logger for %s", impl);
             return impl;
         }
         catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException(e);
         }
     }
-    public final Logger get() {
+    /**
+     * Call this from an {@code ICommonLogger} implementation
+     * when you need access to more logging methods.
+     *
+     * @return a instance of log4j logger created for this implementation
+     * of {@code ICommonLogger}
+     */
+    public final Logger getLogger() {
         return logger;
     }
-    // TODO: Document this method and what exactly it DOES
-    public static ICommonLogger getLogger() {
-        Object object = map.get(Thread.currentThread());
-        return object != null ? ((ICommonLogger)object) : defaultInstance;
+    /**
+     * Internal method used by library classes for logging purposes.
+     * @return default instance of {@code CommonLogger}.
+     */
+    public static ICommonLogger get() {
+        return instance;
     }
-
     /*
      * Short-hand methods to print longs to console.
      */
@@ -42,7 +60,7 @@ public class CommonLogger extends ICommonLogger {
         logger.info(log);
     }
     public void info(String format, Object...params) {
-        logger.info(format, params);
+        logger.printf(Level.INFO, format, params);
     }
     public void info(String log, Throwable t) {
         logger.info(log, t);
@@ -63,7 +81,7 @@ public class CommonLogger extends ICommonLogger {
         logger.debug(log);
     }
     public void debug(String format, Object...params) {
-        logger.printf(Level.INFO, "DEBUG: " + format, params);
+        logger.printf(Level.DEBUG, format, params);
     }
     public void debug(String log, Throwable t) {
         logger.debug(log, t);

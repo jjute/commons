@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 @MethodsNotNull
 public abstract class ICommonLogger {
 
-    Logger logger = LogManager.getLogger();
+    Logger logger = LogManager.getLogger("yooksi.commons");
 
     abstract public void info(String log);
 
