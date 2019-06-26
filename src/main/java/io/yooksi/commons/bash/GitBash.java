@@ -90,7 +90,7 @@ public class GitBash {
      */
     public void runCommand(BashCommand command) throws IOException, InterruptedException {
 
-        String sCommand = command.toString();
+        String sCommand = StringUtils.quote(command.toString(), false);
         LibraryLogger.debug("Running git bash command: " + sCommand);
         ProcessBuilder pb = new ProcessBuilder(ArrayUtils.add(cmdPrefix, sCommand));
         pb.start().waitFor();

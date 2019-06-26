@@ -45,8 +45,7 @@ public class BashCommand {
      * @return a {@code String} representation of this command.
      */
     public String toString() {
+        return !type.name.isEmpty() ? type.name + ' ' + command : command;
 
-        String value = !type.name.isEmpty() ? type.name + ' ' + command : command;
-        return StringUtils.quote(value, false);
     }
 }
