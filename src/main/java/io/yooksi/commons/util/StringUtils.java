@@ -1,10 +1,22 @@
 package io.yooksi.commons.util;
 
 import io.yooksi.commons.define.MethodsNotNull;
+import io.yooksi.commons.define.RegExPatterns;
 
 @MethodsNotNull
 @SuppressWarnings("WeakerAccess")
-public class StringUtils {
+public class StringUtils extends org.apache.commons.lang3.StringUtils {
+
+    /**
+     * Normalize all <i>End of Line</i> control characters found in the given text
+     * by replacing them with a single system dependent variant that corresponds
+     * to the current operating system the user is running.
+     *
+     * @see System#lineSeparator()
+     */
+    public static String normalizeEOL(String text) {
+        return RegExUtils.replaceAll(text, RegExPatterns.LINE_SEPARATORS, System.lineSeparator());
+    }
 
     /**
      * Encapsulate the string argument with quotation marks
