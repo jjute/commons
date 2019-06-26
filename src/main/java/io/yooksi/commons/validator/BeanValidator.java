@@ -2,7 +2,7 @@ package io.yooksi.commons.validator;
 
 import io.yooksi.commons.define.MethodsNotNull;
 
-import io.yooksi.commons.logger.CommonLogger;
+import io.yooksi.commons.logger.LibraryLogger;
 import io.yooksi.commons.util.AnnotationUtils;
 import io.yooksi.commons.util.StringUtils;
 
@@ -222,8 +222,8 @@ public final class BeanValidator {
         /* Print the violation message to console with the appropriate level.
          * Also print an exception stack trace as a debug log
          */
-        CommonLogger.get().printf(level, message);
-        CommonLogger.get().debug(message, new Exception(String.format("Field '%s' with value '%s' has violated " +
+        LibraryLogger.printf(level, message);
+        LibraryLogger.debug(message, new Exception(String.format("Field '%s' with value '%s' has violated " +
                 "annotation constrains of %s", field, value, annotation.annotationType().getName())));
     }
 

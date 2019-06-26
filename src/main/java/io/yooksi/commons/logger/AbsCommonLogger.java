@@ -2,13 +2,10 @@ package io.yooksi.commons.logger;
 
 import io.yooksi.commons.define.MethodsNotNull;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 @MethodsNotNull
-public abstract class ICommonLogger {
-
-    Logger logger = LogManager.getLogger("yooksi.commons");
+@SuppressWarnings("unused")
+abstract class AbsCommonLogger {
 
     abstract public void info(String log);
 
