@@ -1,15 +1,32 @@
 package commons;
 
 import io.yooksi.commons.logger.CommonLogger;
+import io.yooksi.commons.logger.LibraryLogger;
 import org.apache.logging.log4j.Level;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 //@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class LoggerTest {
+
+    @Test
+    public void testLibraryLogging() throws IOException {
+
+        for (Level logLvl : Level.values())
+        {
+            LibraryLogger.clearLogFile();
+
+            String log = "TLL: Printing %s to logfile with CommonLogger at level %s";
+            LibraryLogger.printf(logLvl, log, logLvl, logLvl);
+
+            boolean canLogToFile = logLvl.intLevel() <= LibraryLogger.get().getLevel().intLevel();
+
+            java.io.File logFile = LibraryLogger.getLogFile();
+            TestUtils.assertTextFileLineCount(logFile, canLogToFile ? 1 : 0);
+        }
+
+    }
 
     @Test
     public void testLoggingToLogFileSimple() throws IOException {
