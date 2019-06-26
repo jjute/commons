@@ -9,49 +9,61 @@ import org.eclipse.jgit.api.StashApplyCommand;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CommitCommand;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.StashCreateCommand;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.eclipse.jgit.lib.RefDatabase;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 
 @MethodsNotNull
 @SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused"})
-public class GitUtils {
+public class Git extends org.eclipse.jgit.api.Git {
 
-    private final Git GIT;
     private final java.util.Map<RevCommit, String> stashMap =
             java.util.Collections.synchronizedMap(new java.util.Hashtable<>());
 
-    public GitUtils() {
-        GIT = openRepository();
-    }
-    public GitUtils(Path repoPath) throws IOException {
-        GIT = openRepository(repoPath);
+    /**
+     * Construct a new {@link org.eclipse.jgit.api.Git} object which can
+     * interact with the specified git repository.
+     * <p>
+     * All command classes returned by methods of this class will always
+     * interact with this git repository.
+     * <p>
+     * The caller is responsible for closing the repository; {@link #close()} on
+     * this instance does not close the repo.
+     *
+     * @param repo the git repository this class is interacting with;
+     *             {@code null} is not allowed.
+     */
+    public Git(Repository repo) {
+        super(repo);
     }
 
     /**
      * Open Git repository located in root directory.
      *
-     * @return a {@link Git} object for the git repository in root directory
+     * @return a {@link org.eclipse.jgit.api.Git} object for the git repository in root directory
      * @throws IllegalStateException if the git repository was not found
      *
-     * @see Git#open(File)
+     * @see org.eclipse.jgit.api.Git#open(File)
      */
     public static Git openRepository() {
 
         try {
-            return Git.open(new java.io.File(".git"));
+            return (Git) org.eclipse.jgit.api.Git.open(new File(".git"));
         }
         catch (IOException e) {
             throw new IllegalStateException("Unable to open git repository in root directory", e);
@@ -62,7 +74,7 @@ public class GitUtils {
      * Open Git repository located under given path.
      *
      * @param repoPath {@code Path} to the repository to open
-     * @return a {@link Git} object for the existing git repository
+     * @return a {@link org.eclipse.jgit.api.Git} object for the existing git repository
      *
      * @throws FileNotFoundException if the file represented by the given path does not exist.
      * @throws IOException if the repository could not be accessed to configure builder's parameters.
@@ -74,15 +86,7 @@ public class GitUtils {
             String log = "Unable to find Git repository under path \"%s\"";
             throw new FileNotFoundException(String.format(log, repoPath.toString()));
         }
-        else return Git.open(repo);
-    }
-
-    /**
-     * @return a {@link Git} object that belongs to this instance of {@link GitUtils}
-     *         representing an existing Git repository.
-     */
-    public Git get() {
-        return GIT;
+        else return (Git) org.eclipse.jgit.api.Git.open(repo);
     }
 
     /**
@@ -119,12 +123,12 @@ public class GitUtils {
      * @return A reference to the commit
      * @throws GitAPIException if an exception occurred while executing {@link CommitCommand#call()}.
      *
-     * @see Git#commit()
+     * @see org.eclipse.jgit.api.Git#commit()
      */
     public RevCommit commit(String message) throws GitAPIException {
 
         LibraryLogger.debug("Committing indexed files");
-        return GIT.commit().setMessage(message).call();
+        return commit().setMessage(message).call();
     }
 
     /**
@@ -136,13 +140,13 @@ public class GitUtils {
      * @return reference to the index file just added
      * @throws GitAPIException if an exception occurred while executing {@link AddCommand#call()}.
      *
-     * @see Git#add()
+     * @see org.eclipse.jgit.api.Git#add()
      * @see AddCommand#addFilepattern(String)
      */
     public DirCache add(UnixPath path) throws GitAPIException {
 
         LibraryLogger.debug("Adding \"%s\" to indexed files.", path.toString());
-        return GIT.add().addFilepattern(path.toString()).call();
+        return add().addFilepattern(path.toString()).call();
     }
 
     /**
@@ -161,14 +165,14 @@ public class GitUtils {
      * @throws GitAPIException if an exception occurred while executing {@link CheckoutCommand#call()}.
      * @throws IllegalStateException if the checkout operation failed due to unresolved conflicts.
      *
-     * @see Git#checkout()
+     * @see org.eclipse.jgit.api.Git#checkout()
      * @see CheckoutCommand#setCreateBranch(boolean)
      */
     public Ref checkoutBranch(String branch, boolean create) throws IOException, GitAPIException {
 
         try {
-            CheckoutCommand cmd = GIT.checkout().setName(branch);
-            if (create && GIT.getRepository().findRef(branch) == null)
+            CheckoutCommand cmd = checkout().setName(branch);
+            if (create && getRepository().findRef(branch) == null)
             {
                 LibraryLogger.debug("Create and checkout new branch " + branch);
                 //noinspection ConstantConditions
@@ -204,14 +208,14 @@ public class GitUtils {
      * @throws GitAPIException if an exception occurred while executing {@link StashCreateCommand#call()}
      * @throws IOException when we're unable to resolve current branch
      *
-     * @see Git#stashCreate()
+     * @see org.eclipse.jgit.api.Git#stashCreate()
      */
     public RevCommit stashChanges() throws GitAPIException, IOException {
 
-        String branch = GIT.getRepository().getBranch();
+        String branch = getRepository().getBranch();
         LibraryLogger.debug("Stashing local changes on branch " + branch);
 
-        return registerStash(GIT.stashCreate().call(), branch);
+        return registerStash(stashCreate().call(), branch);
     }
 
     /**
@@ -225,22 +229,22 @@ public class GitUtils {
      *
      * @throws IOException when we're unable to resolve current branch
      *
-     * @see Git#stashApply()
+     * @see org.eclipse.jgit.api.Git#stashApply()
      */
     public void applyStash() throws GitAPIException, IOException {
 
-        String branch = GIT.getRepository().getBranch();
+        String branch = getRepository().getBranch();
         LibraryLogger.debug("Applying stashed changes on branch " + branch);
 
-        java.util.Collection<RevCommit> stashes = GIT.stashList().call();
+        java.util.Collection<RevCommit> stashes = stashList().call();
 
-        GIT.stashApply().call();
+        stashApply().call();
     }
 
     public java.util.List<DiffEntry> diff(AbstractTreeIterator from, AbstractTreeIterator to,
-                                                 OutputStream out, @Nullable TreeFilter filter) throws GitAPIException {
+                                          OutputStream out, @Nullable TreeFilter filter) throws GitAPIException {
 
-            return GIT.diff().setOldTree(from).setNewTree(to)
+            return diff().setOldTree(from).setNewTree(to)
                     .setPathFilter(filter == null ? TreeFilter.ALL : filter).setOutputStream(out).call();
     }
 
