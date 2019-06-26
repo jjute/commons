@@ -1,0 +1,279 @@
+package io.yooksi.commons.git;
+
+import io.yooksi.commons.bash.UnixPath;
+import io.yooksi.commons.define.MethodsNotNull;
+import io.yooksi.commons.logger.LibraryLogger;
+
+import org.eclipse.jgit.api.StashListCommand;
+import org.eclipse.jgit.api.StashApplyCommand;
+import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.CheckoutCommand;
+import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.StashCreateCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.treewalk.AbstractTreeIterator;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
+import org.eclipse.jgit.lib.RefDatabase;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.*;
+import java.nio.file.Path;
+
+@MethodsNotNull
+@SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused"})
+public class GitUtils {
+
+    private final Git GIT;
+    private final java.util.Map<RevCommit, String> stashMap =
+            java.util.Collections.synchronizedMap(new java.util.Hashtable<>());
+
+    public GitUtils() {
+        GIT = openRepository();
+    }
+    public GitUtils(Path repoPath) throws IOException {
+        GIT = openRepository(repoPath);
+    }
+
+    /**
+     * Open Git repository located in root directory.
+     *
+     * @return a {@link Git} object for the git repository in root directory
+     * @throws IllegalStateException if the git repository was not found
+     *
+     * @see Git#open(File)
+     */
+    public static Git openRepository() {
+
+        try {
+            return Git.open(new java.io.File(".git"));
+        }
+        catch (IOException e) {
+            throw new IllegalStateException("Unable to open git repository in root directory", e);
+        }
+    }
+
+    /**
+     * Open Git repository located under given path.
+     *
+     * @param repoPath {@code Path} to the repository to open
+     * @return a {@link Git} object for the existing git repository
+     *
+     * @throws FileNotFoundException if the file represented by the given path does not exist.
+     * @throws IOException if the repository could not be accessed to configure builder's parameters.
+     */
+    public static Git openRepository(Path repoPath) throws IOException {
+
+        File repo = repoPath.toFile();
+        if (!repo.exists()) {
+            String log = "Unable to find Git repository under path \"%s\"";
+            throw new FileNotFoundException(String.format(log, repoPath.toString()));
+        }
+        else return Git.open(repo);
+    }
+
+    /**
+     * @return a {@link Git} object that belongs to this instance of {@link GitUtils}
+     *         representing an existing Git repository.
+     */
+    public Git get() {
+        return GIT;
+    }
+
+    /**
+     * Put the stash object in internal storage.
+     *
+     * @param stash reference to the stashed commit
+     * @return reference to the stashed commit
+     *
+     * @throws NullPointerException if the given {@code RevCommit} object is null
+     */
+    private synchronized RevCommit registerStash(RevCommit stash, String branch) {
+
+        stashMap.put(stash, branch);
+        return stash;
+    }
+    /**
+     * Remove the stash object from internal storage.
+     * @param stash reference to the stashed commit
+     */
+    private synchronized void unregisterStash(RevCommit stash) {
+
+        if (stashMap.remove(stash) == null) {
+            LibraryLogger.warn("Tried to remove unregistered stash " + stash);
+        }
+    }
+
+    /**
+     * Create a new commit containing the current contents of the index and the given log message
+     * describing the changes. The new commit is a direct child of {@code HEAD}, usually the tip
+     * of the current branch, and the branch is updated to point to it (unless no branch is
+     * associated with the working tree, in which case {@code HEAD} is "detached" as described
+     * in <a href=https://git-scm.com/docs/git-checkout>git-checkout[1]</a>)
+     *
+     * @return A reference to the commit
+     * @throws GitAPIException if an exception occurred while executing {@link CommitCommand#call()}.
+     *
+     * @see Git#commit()
+     */
+    public RevCommit commit(String message) throws GitAPIException {
+
+        LibraryLogger.debug("Committing indexed files");
+        return GIT.commit().setMessage(message).call();
+    }
+
+    /**
+     * Add a path to a {@code file/directory} whose content should be added.
+     * A directory name (e.g. dir to add dir/file1 and dir/file2) can
+     * also be given to add all files in the directory, recursively.
+     *
+     * @param path <i>Unix-style</i> path to the file to add
+     * @return reference to the index file just added
+     * @throws GitAPIException if an exception occurred while executing {@link AddCommand#call()}.
+     *
+     * @see Git#add()
+     * @see AddCommand#addFilepattern(String)
+     */
+    public DirCache add(UnixPath path) throws GitAPIException {
+
+        LibraryLogger.debug("Adding \"%s\" to indexed files.", path.toString());
+        return GIT.add().addFilepattern(path.toString()).call();
+    }
+
+    /**
+     * Updates files in the working tree to match the version in the index or the specified tree.
+     * If no paths are given, git checkout will also update {@code HEAD} to set the
+     * specified branch as the current branch.
+     *
+     * @param branch name of the branch to checkout
+     * @param create whether to create the branch if it does not already exist
+     * @return a reference to the checked out branch
+     *
+     * @throws IOException if the reference space under given branch cannot be accessed.
+     *                     This exception is thrown from {@link RefDatabase#exactRef(String)}.
+     *                     The exact reason is not well documented.
+     *
+     * @throws GitAPIException if an exception occurred while executing {@link CheckoutCommand#call()}.
+     * @throws IllegalStateException if the checkout operation failed due to unresolved conflicts.
+     *
+     * @see Git#checkout()
+     * @see CheckoutCommand#setCreateBranch(boolean)
+     */
+    public Ref checkoutBranch(String branch, boolean create) throws IOException, GitAPIException {
+
+        try {
+            CheckoutCommand cmd = GIT.checkout().setName(branch);
+            if (create && GIT.getRepository().findRef(branch) == null)
+            {
+                LibraryLogger.debug("Create and checkout new branch " + branch);
+                //noinspection ConstantConditions
+                cmd.setCreateBranch(create);
+            }
+            else LibraryLogger.debug("Checking out branch " + branch);
+            return cmd.call();
+        }
+        /* This exception will be thrown when we cant checkout because of unresolved conflicts.
+         * So we're gonna stash the changes and try to checkout the branch again.
+         */
+        catch (CheckoutConflictException e1) {
+
+            try {
+                stashChanges();
+                return checkoutBranch(branch, create);
+            }
+            catch (CheckoutConflictException e2)
+            {
+                String log = "Unable to checkout branch %s due to unresolved conflicts.";
+                throw new IllegalStateException(String.format(log, branch), e2);
+            }
+        }
+    }
+
+    /**
+     * Use this method when you want to record the current state of the working directory and the index,
+     * but want to go back to a clean working directory. The command saves your local modifications away
+     * and reverts the working directory to match the {@code HEAD} commit.
+     *
+     * @return reference to the stashed commit
+     *
+     * @throws GitAPIException if an exception occurred while executing {@link StashCreateCommand#call()}
+     * @throws IOException when we're unable to resolve current branch
+     *
+     * @see Git#stashCreate()
+     */
+    public RevCommit stashChanges() throws GitAPIException, IOException {
+
+        String branch = GIT.getRepository().getBranch();
+        LibraryLogger.debug("Stashing local changes on branch " + branch);
+
+        return registerStash(GIT.stashCreate().call(), branch);
+    }
+
+    /**
+     * Apply the changes in the last stashed commit to the working directory and index.
+     * This operation is similar to {@code pop}, but does not remove the state from the
+     * stash list. Unlike {@code pop, <stash>} may be any commit that looks like a commit
+     * created by {@code stash push} or {@code stash create}.
+     *
+     * @throws GitAPIException if an exception occurred while executing
+     * {@link StashApplyCommand#call()} or {@link StashListCommand#call()}.
+     *
+     * @throws IOException when we're unable to resolve current branch
+     *
+     * @see Git#stashApply()
+     */
+    public void applyStash() throws GitAPIException, IOException {
+
+        String branch = GIT.getRepository().getBranch();
+        LibraryLogger.debug("Applying stashed changes on branch " + branch);
+
+        java.util.Collection<RevCommit> stashes = GIT.stashList().call();
+
+        GIT.stashApply().call();
+    }
+
+    public java.util.List<DiffEntry> diff(AbstractTreeIterator from, AbstractTreeIterator to,
+                                                 OutputStream out, @Nullable TreeFilter filter) throws GitAPIException {
+
+            return GIT.diff().setOldTree(from).setNewTree(to)
+                    .setPathFilter(filter == null ? TreeFilter.ALL : filter).setOutputStream(out).call();
+    }
+
+    /**
+     * @return {@code String} form of the commit's SHA-1, in lower case hexadecimal.
+     */
+    public static String getCommitSHA(RevCommit commit) {
+        return commit.toObjectId().getName();
+    }
+
+//    public static void constructDiffCommand(Path path, String from, String to, Path output) {
+//
+//        String log = "Getting diff for file: \"%s\"%nRevision: \"%s\" -- %s%n";
+//        System.out.printf(log, path.getFileName().toString(), from, to);
+//
+//        String filename = FilenameUtils.removeExtension(path.getFileName().toString()) + ".diff";
+//        Path outputPath = Paths.get(output.toString(), filename);
+//
+//        java.io.File outputFile = outputPath.toFile();
+//        java.io.File parentFile = outputFile.getParentFile();
+//
+//        if (!outputFile.exists()) {
+//            try {
+//                if (!parentFile.exists() && !parentFile.mkdir() && !outputFile.createNewFile())
+//                {
+//                    Exception e = new IOException("Unable to create new output file");
+//                    throw new IllegalStateException(output.toString(), e);
+//                }
+//            } catch (IOException e) {
+//                throw new IllegalStateException(e);
+//            }
+//        }
+//        git diff $gitBranch:./$3 $2:./$3 > $4
+//        runGitBashScript(, to, from, convertToGitPath(path), convertToGitPath(outputPath));
+//    }
+}
