@@ -56,7 +56,7 @@ public class FileUtilsTest {
         Set<String> excludeSet = new java.util.HashSet<>();
 
         for (int i = 0; i < excludeFiles; i++) {
-            excludeList[i] = String.valueOf(i) + ".txt";
+            excludeList[i] = i + ".txt";
             excludeSet.add(excludeList[i]);
         }
         Path path = ROOT_PATH.resolve("testDir");
@@ -111,7 +111,7 @@ public class FileUtilsTest {
              */
             for (int i2 = RAND.nextInt(10) + 1; i2 > 0; i2--, created++)
             {
-                String filename = String.valueOf(i2) + ".txt";
+                String filename = i2 + ".txt";
                 if (excludedFiles.contains(filename)) {
                     excluded++;
                 }

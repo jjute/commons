@@ -4,11 +4,11 @@ import io.yooksi.commons.util.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.validation.constraints.AssertTrue;
-
+@SuppressWarnings("WeakerAccess")
 public class ArrayUtilsTest {
 
     @Test
+    @SuppressWarnings("ConstantConditions")
     public void prependArrayTest() {
 
         Integer[] refArray = ArrayUtils.prepend(1, new Integer[] { 2, 3 });
@@ -23,20 +23,20 @@ public class ArrayUtilsTest {
 
     @Test
     public void expandArrayForwardTest() {
-        expandArrayTest(0, 4, -1, 3);
+        expandArrayTest(0, 4);
     }
 
     @Test
     public void expandArrayBackwardsTest() {
-        expandArrayTest(2, 0, 1, -1);
+        expandArrayTest(2, 0);
     }
 
     @Test
     public void expandArrayFrontAndBackTest() {
-        expandArrayTest( 6, 11, 5, 10);
+        expandArrayTest( 6, 11);
     }
 
-    private void expandArrayTest(int back, int front, Integer nullIndexBack, Integer nullIndexFront) {
+    private void expandArrayTest(int back, int front) {
 
         Integer[] refArray = ArrayUtils.expandArray(new Integer[] { 1, 2, 3 }, back, front);
         Assertions.assertEquals(3 + back + front, refArray.length);
