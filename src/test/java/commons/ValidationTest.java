@@ -7,11 +7,55 @@ import io.yooksi.commons.validator.BeanValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import javax.validation.groups.Default;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class ValidationTest {
+
+    public static class Parent {
+
+        public Parent(@PositiveOrZero int a, @NotEmpty String b) {}
+    }
+    public static class FirstChild extends Parent {
+
+        public FirstChild(int a, String b) {
+            super(a, b);
+        }
+    }
+    public static class SecondChild extends FirstChild {
+
+        public SecondChild(int a, String b) {
+            super(a, b);
+        }
+    }
+
+    @Test
+    public void testConstructorValidation() {
+
+        // Construct and validate parent
+        Parent parent1 = BeanValidator.constructParent(Parent.class, FirstChild.class, 1, "sample");
+        assertBeanViolationCount(0);
+
+        Parent parent2 = BeanValidator.constructParent(Parent.class, FirstChild.class, -1, "");
+        assertBeanViolationCount(2);
+
+        // Construct and validate the first child
+        FirstChild firstChild1 = BeanValidator.constructChild(Parent.class, FirstChild.class, 1, "sample");
+        assertBeanViolationCount(0);
+
+        FirstChild firstChild2 = BeanValidator.constructChild(Parent.class, FirstChild.class, -1, "");
+        assertBeanViolationCount(2);
+
+        // Construct and validate the second child
+        FirstChild secondChild1 = BeanValidator.constructChild(Parent.class, SecondChild.class, 1, "sample");
+        assertBeanViolationCount(0);
+
+        FirstChild secondChild2 = BeanValidator.constructChild(Parent.class, SecondChild.class, -1, "");
+        assertBeanViolationCount(2);
+    }
 
     @Test
     public void testObjectFieldValidation() {

@@ -143,25 +143,31 @@ public final class BeanValidator {
     }
 
     /**
-     * <p>Create, initialize and <b>validate</b> a new instance of a child class.</p>
-     * A child class is only recognized as valid if it extends it's parent base class.
+     * Internal method to create, initialize and <b>validate</b> a new instance of a given class.
+     * Note that a child class is only recognized as valid if it extends it's parent base class.
+     * This method will validate all method parameters of both the parent and child but is limited
+     * to validating only a single child, recursive validation is currently not supported.
+     *
+     * @param child if {@code true} the return value will be a newly constructed child class,
+     *              otherwise the return value will be a newly constructed parent class.
      *
      * @param params constructor initialization parameters
      * @return newly constructed and validated object instance
+     *
      * @throws IllegalArgumentException when no child or parent constructor
      * with the supplied parameters could be found
      */
     @SuppressWarnings("unchecked")
-    public static <T> T constructChild(Class<? super T> parentClass, Class<T> childClass, Object...params) {
+    private static <T> T construct(Class<? super T> parentClass, Class<T> childClass, boolean child, Object...params) {
 
         /* Bean constraint validation doesn't seem to process parent constructors
          * so we have to manually validate their parameters first
          */
-        Constructor<T> constructor = getConstructor(parentClass, params);
-        java.util.Set<ConstraintViolation<T>> parentViolations = validateConstructorParams(constructor, params);
+        Constructor<T> prentConstructor = getConstructor(parentClass, params);
+        java.util.Set<ConstraintViolation<T>> parentViolations = validateConstructorParams(prentConstructor, params);
 
-        constructor = getConstructor(childClass, params);
-        java.util.Set<ConstraintViolation<T>> childViolations = validateConstructorParams(constructor, params);
+        Constructor<T> childConstructor = getConstructor(childClass, params);
+        java.util.Set<ConstraintViolation<T>> childViolations = validateConstructorParams(childConstructor, params);
 
         /* In case both child and parent constructor produced constraint violations
          * on the same method parameters we need to filter the child constructor
@@ -178,7 +184,41 @@ public final class BeanValidator {
         for (ConstraintViolation violation : parentViolations) {
             processViolation(violation);
         }
-        return construct(constructor, params);
+        return construct(child ? childConstructor : prentConstructor, params);
+    }
+
+    /**
+     * Create, initialize and <b>validate</b> a new instance of given child class.
+     * Note that a child class is only recognized as valid if it extends it's parent base class.
+     * This method will validate all method parameters of both the parent and child but is limited
+     * to validating only a single child, recursive validation is currently not supported.
+     *
+     * @param params constructor initialization parameters
+     * @return newly constructed and validated object instance
+     * @throws IllegalArgumentException when no child or parent constructor
+     *                                  with the supplied parameters could be found
+     *
+     * @see #construct(Class, Class, boolean, Object...)
+     */
+    public static <T> T constructChild(Class<? super T> parentClass, Class<T> childClass, Object...params) {
+        return construct(parentClass, childClass, true, params);
+    }
+
+    /**
+     * Create, initialize and <b>validate</b> a new instance of given parent class.
+     * Note that a child class is only recognized as valid if it extends it's parent base class.
+     * This method will validate all method parameters of both the parent and child but is limited
+     * to validating only a single child, recursive validation is currently not supported.
+     *
+     * @param params constructor initialization parameters
+     * @return newly constructed and validated object instance
+     * @throws IllegalArgumentException when no child or parent constructor
+     *                                  with the supplied parameters could be found
+     *
+     * @see #construct(Class, Class, boolean, Object...)
+     */
+    public static <T> T constructParent(Class<T> parentClass, Class<? extends T> childClass, Object... params) {
+        return construct(parentClass, childClass, false, params);
     }
 
     /**
