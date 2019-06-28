@@ -143,11 +143,16 @@ public final class BeanValidator {
     }
 
     /**
-     * Internal method to create, initialize and <b>validate</b> a new instance of a given class.
-     * Note that a child class is only recognized as valid if it extends it's parent base class.
-     * This method will validate all method parameters of both the parent and child but is limited
-     * to validating only a single child, recursive validation is currently not supported.
-     *
+     * <p>
+     *     Internal method to create, initialize and <b>validate</b> a new instance of a given class.
+     *     Note that a child class is only recognized as valid if it extends it's parent base class.
+     *     This method will validate all method parameters of both the parent and child but is limited
+     *     to validating only a single child, recursive validation is currently not supported.
+     * </p><p>
+     *     The order of parameters in the argument array has to match the constructor parameter order,
+     *     but the not all parameters have to be an exact match. Read {@link #getConstructor(Class, Object...)}
+     *     method documentation for more information about parameter requirements.
+     * </p>
      * @param child if {@code true} the return value will be a newly constructed child class,
      *              otherwise the return value will be a newly constructed parent class.
      *
@@ -164,14 +169,22 @@ public final class BeanValidator {
          * so we have to manually validate their parameters first
          */
         Constructor<T> prentConstructor = getConstructor(parentClass, params);
-        java.util.Set<ConstraintViolation<T>> parentViolations = validateConstructorParams(prentConstructor, params);
+        /*
+         * We have to create a new array for parent constructor parameters and populate it
+         * with the least amount of common parameters in the natural order from left to right
+         * in case the child constructor requires more additional parameters
+         */
+        Object[] parentParams = new Object[prentConstructor.getParameterCount()];
+        System.arraycopy(params, 0, parentParams, 0, prentConstructor.getParameterCount());
+
+        java.util.Set<ConstraintViolation<T>> parentViolations = validateConstructorParams(prentConstructor, parentParams);
 
         Constructor<T> childConstructor = getConstructor(childClass, params);
         java.util.Set<ConstraintViolation<T>> childViolations = validateConstructorParams(childConstructor, params);
 
         /* In case both child and parent constructor produced constraint violations
          * on the same method parameters we need to filter the child constructor
-         * violations to exclude the duplicates so we don't do double prints.
+         * violations to exclude the duplicates so we don't do double prints
          */
         java.util.Set<Object> violationValues = new java.util.HashSet<>();
         parentViolations.forEach(v -> violationValues.add(v.getInvalidValue()));
@@ -188,11 +201,16 @@ public final class BeanValidator {
     }
 
     /**
-     * Create, initialize and <b>validate</b> a new instance of given child class.
-     * Note that a child class is only recognized as valid if it extends it's parent base class.
-     * This method will validate all method parameters of both the parent and child but is limited
-     * to validating only a single child, recursive validation is currently not supported.
-     *
+     * <p>
+     *     Create, initialize and <b>validate</b> a new instance of given child class.
+     *     Note that a child class is only recognized as valid if it extends it's parent base class.
+     *     This method will validate all method parameters of both the parent and child but is limited
+     *     to validating only a single child, recursive validation is currently not supported.
+     * </p><p>
+     *     The order of parameters in the argument array has to match the constructor parameter order,
+     *     but the not all parameters have to be an exact match. Read {@link #getConstructor(Class, Object...)}
+     *     method documentation for more information about parameter requirements.
+     * </p>
      * @param params constructor initialization parameters
      * @return newly constructed and validated object instance
      * @throws IllegalArgumentException when no child or parent constructor
@@ -205,11 +223,16 @@ public final class BeanValidator {
     }
 
     /**
-     * Create, initialize and <b>validate</b> a new instance of given parent class.
-     * Note that a child class is only recognized as valid if it extends it's parent base class.
-     * This method will validate all method parameters of both the parent and child but is limited
-     * to validating only a single child, recursive validation is currently not supported.
-     *
+     * <p>
+     *     Create, initialize and <b>validate</b> a new instance of given parent class.
+     *     Note that a child class is only recognized as valid if it extends it's parent base class.
+     *     This method will validate all method parameters of both the parent and child but is limited
+     *     to validating only a single child, recursive validation is currently not supported.
+     * </p><p>
+     *     The order of parameters in the argument array has to match the constructor parameter order,
+     *     but the not all parameters have to be an exact match. Read {@link #getConstructor(Class, Object...)}
+     *     method documentation for more information about parameter requirements.
+     * </p>
      * @param params constructor initialization parameters
      * @return newly constructed and validated object instance
      * @throws IllegalArgumentException when no child or parent constructor
@@ -223,7 +246,10 @@ public final class BeanValidator {
 
     /**
      * Find the constructor object for a declared class constructor with the specified parameter list.
-     * The order of parameters in the argument array has to match the constructor parameter order.
+     * The order of parameters in the argument array has to match the constructor parameter order,
+     * but the not all parameters have to be an exact match. If the method is unable to find a
+     * constructor that exactly matches the given parameters it will try to find a constructor
+     * that matches the least amount of common parameters in the natural order from left to right.
      *
      * @param clazz Class to get the declared constructor from
      * @param params list of constructor parameters
@@ -238,7 +264,19 @@ public final class BeanValidator {
          * is a more flexible search than the normal exact matching algorithm.
          */
         Constructor c = ConstructorUtils.getMatchingAccessibleConstructor(clazz, paramClasses);
-        if (c == null) {
+        if (c == null)
+        {
+            /* If we were unable to find a constructor that exactly matches the
+             * given parameters try to find one that matches the least amount of
+             * common parameters in the natural order from left to right.
+             */
+            for (int i1 = 0; i1 < paramClasses.length; i1++)
+            {
+                Class[] commonClasses = new Class[i1 + 1];
+                System.arraycopy(paramClasses, 0, commonClasses, 0, i1 + 1);
+                c = ConstructorUtils.getMatchingAccessibleConstructor(clazz, commonClasses);
+                if (c != null) return c;
+            }
             String sParams = java.util.Arrays.toString(params);
             String log = String.format("Unable to find constructor for class %s with parameters %s", clazz, sParams);
             throw new IllegalArgumentException(new NoSuchMethodException(log));

@@ -31,9 +31,15 @@ public class ValidationTest {
             super(a, b);
         }
     }
+    public static class ThirdChild extends FirstChild {
+
+        public ThirdChild(int a, String b, boolean c) {
+            super(a, b);
+        }
+    }
 
     @Test
-    public void testConstructorValidation() {
+    public void testBasicConstructorValidation() {
 
         // Construct and validate parent
         Parent parent1 = BeanValidator.constructParent(Parent.class, FirstChild.class, 1, "sample");
@@ -48,12 +54,27 @@ public class ValidationTest {
 
         FirstChild firstChild2 = BeanValidator.constructChild(Parent.class, FirstChild.class, -1, "");
         assertBeanViolationCount(2);
+    }
+
+    @Test
+    public void testIntermediaryConstructorValidation() {
 
         // Construct and validate the second child
-        FirstChild secondChild1 = BeanValidator.constructChild(Parent.class, SecondChild.class, 1, "sample");
+        SecondChild secondChild1 = BeanValidator.constructChild(Parent.class, SecondChild.class, 1, "sample");
         assertBeanViolationCount(0);
 
-        FirstChild secondChild2 = BeanValidator.constructChild(Parent.class, SecondChild.class, -1, "");
+        SecondChild secondChild2 = BeanValidator.constructChild(Parent.class, SecondChild.class, -1, "");
+        assertBeanViolationCount(2);
+    }
+
+    @Test
+    public void testUnequalConstructorValidation() {
+
+        // Construct and validate the third child
+        ThirdChild thirdChild1 = BeanValidator.constructChild(Parent.class, ThirdChild.class, 1, "sample", true);
+        assertBeanViolationCount(0);
+
+        ThirdChild thirdChild2 = BeanValidator.constructChild(Parent.class, ThirdChild.class, -1, "", true);
         assertBeanViolationCount(2);
     }
 
