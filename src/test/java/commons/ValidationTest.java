@@ -3,6 +3,7 @@ package commons;
 import io.yooksi.commons.aop.AOPProxy;
 import io.yooksi.commons.define.PositiveRange;
 import io.yooksi.commons.logger.LibraryLogger;
+import io.yooksi.commons.util.ArrayUtils;
 import io.yooksi.commons.validator.BeanValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -33,26 +34,29 @@ public class ValidationTest {
     }
     public static class ThirdChild extends FirstChild {
 
-        public ThirdChild(int a, String b, boolean c) {
+        public ThirdChild(int a, String b, ValidationTest c) {
             super(a, b);
         }
     }
+
+    private final Object[] paramsValid = new Object[] { 1, "sample" };
+    private final Object[] paramsInvalid = new Object[] { -1, "" };
 
     @Test
     public void testBasicConstructorValidation() {
 
         // Construct and validate parent
-        Parent parent1 = BeanValidator.constructParent(Parent.class, FirstChild.class, 1, "sample");
+        Parent parent1 = BeanValidator.constructParent(Parent.class, FirstChild.class, paramsValid);
         assertBeanViolationCount(0);
 
-        Parent parent2 = BeanValidator.constructParent(Parent.class, FirstChild.class, -1, "");
+        Parent parent2 = BeanValidator.constructParent(Parent.class, FirstChild.class, paramsInvalid);
         assertBeanViolationCount(2);
 
         // Construct and validate the first child
-        FirstChild firstChild1 = BeanValidator.constructChild(Parent.class, FirstChild.class, 1, "sample");
+        FirstChild firstChild1 = BeanValidator.constructChild(Parent.class, FirstChild.class, paramsValid);
         assertBeanViolationCount(0);
 
-        FirstChild firstChild2 = BeanValidator.constructChild(Parent.class, FirstChild.class, -1, "");
+        FirstChild firstChild2 = BeanValidator.constructChild(Parent.class, FirstChild.class, paramsInvalid);
         assertBeanViolationCount(2);
     }
 
@@ -60,10 +64,10 @@ public class ValidationTest {
     public void testIntermediaryConstructorValidation() {
 
         // Construct and validate the second child
-        SecondChild secondChild1 = BeanValidator.constructChild(Parent.class, SecondChild.class, 1, "sample");
+        SecondChild secondChild1 = BeanValidator.constructChild(Parent.class, SecondChild.class, paramsValid);
         assertBeanViolationCount(0);
 
-        SecondChild secondChild2 = BeanValidator.constructChild(Parent.class, SecondChild.class, -1, "");
+        SecondChild secondChild2 = BeanValidator.constructChild(Parent.class, SecondChild.class, paramsInvalid);
         assertBeanViolationCount(2);
     }
 
@@ -71,10 +75,14 @@ public class ValidationTest {
     public void testUnequalConstructorValidation() {
 
         // Construct and validate the third child
-        ThirdChild thirdChild1 = BeanValidator.constructChild(Parent.class, ThirdChild.class, 1, "sample", true);
+        ThirdChild thirdChild1 = BeanValidator.constructChild(Parent.class, ThirdChild.class,
+                ArrayUtils.add(paramsValid, new ValidationTest()));
+
         assertBeanViolationCount(0);
 
-        ThirdChild thirdChild2 = BeanValidator.constructChild(Parent.class, ThirdChild.class, -1, "", true);
+        ThirdChild thirdChild2 = BeanValidator.constructChild(Parent.class, ThirdChild.class,
+                ArrayUtils.add(paramsInvalid, new ValidationTest()));
+
         assertBeanViolationCount(2);
     }
 

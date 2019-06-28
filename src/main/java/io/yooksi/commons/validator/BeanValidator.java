@@ -163,7 +163,7 @@ public final class BeanValidator {
      * with the supplied parameters could be found
      */
     @SuppressWarnings("unchecked")
-    private static <T> T construct(Class<? super T> parentClass, Class<T> childClass, boolean child, Object...params) {
+    private static <T> T construct(Class<? super T> parentClass, Class<T> childClass, boolean child, Object[] params) {
 
         /* Bean constraint validation doesn't seem to process parent constructors
          * so we have to manually validate their parameters first
@@ -218,7 +218,7 @@ public final class BeanValidator {
      *
      * @see #construct(Class, Class, boolean, Object...)
      */
-    public static <T> T constructChild(Class<? super T> parentClass, Class<T> childClass, Object...params) {
+    public static <T> T constructChild(Class<? super T> parentClass, Class<T> childClass, Object[] params) {
         return construct(parentClass, childClass, true, params);
     }
 
@@ -240,7 +240,7 @@ public final class BeanValidator {
      *
      * @see #construct(Class, Class, boolean, Object...)
      */
-    public static <T> T constructParent(Class<T> parentClass, Class<? extends T> childClass, Object... params) {
+    public static <T> T constructParent(Class<T> parentClass, Class<? extends T> childClass, Object[] params) {
         return construct(parentClass, childClass, false, params);
     }
 
