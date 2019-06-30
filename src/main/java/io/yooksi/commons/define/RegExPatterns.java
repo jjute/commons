@@ -37,4 +37,21 @@ public class RegExPatterns {
     public static final Pattern LINE_SEPARATORS = Pattern.compile(
             "(" + LineSeparator.Unix + "|" + LineSeparator.Windows + "|" + LineSeparator.Macintosh + ")"
     );
+    /**
+     * <h3>Description</h3>
+     * <p>
+     *     Unix filenames typically only use alphanumeric characters <i>(mostly lower case)</i>,
+     *     underscores, hyphens and periods. Other characters, such as dollar signs, percentage
+     *     signs and brackets, have special meanings to the shell and can be distracting to work with.
+     *     File names should never begin with a hyphen.
+     * </p><br>
+     * <h3>Matches</h3>
+     * <p>
+     *     The very first line <b>only</b> if it conforms to a <i>UNIX-style</i> naming convention.
+     * <ul>
+     *     <b>Quantifier:</b> All matching characters between {@code one} and {@code unlimited} times.
+     * </ul>
+     * @see <a href="http://www.linfo.org/file_name.html">File Naming Conventions in Linux</a>
+     */
+    public static final Pattern UNIX_NAMING_CONVENTION = Pattern.compile("^[A-Za-z0-9]+[A-Za-z0-9._-]*$");
 }
