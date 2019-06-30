@@ -37,6 +37,25 @@ public class RegExPatterns {
     public static final Pattern LINE_SEPARATORS = Pattern.compile(
             "(" + LineSeparator.Unix + "|" + LineSeparator.Windows + "|" + LineSeparator.Macintosh + ")"
     );
+
+    /**
+     * <h3>Matches</h3>
+     * <p>
+     *     The very first line <b>only</b> if it represents a simple version number which is composed
+     *     of a series of digits separated by single periods. The line has to conform to the following rules:
+     *     <ul>
+     *         <li>Does not contain letters, whitespaces, or special characters.</li>
+     *         <li>Does not contain negative digits <i>(numbers less then zero).</i></li>
+     *         <li>The line cannot start or end with a period.</li>
+     *         <li>Each series of digits after the initial group has to be preceded with a single period.</li>
+     *     </ul>
+     * </p>
+     * <ul>
+     *     <b>Quantifier:</b> Between {@code one} and {@code unlimited} times.
+     * </ul>
+     */
+    public static final Pattern SIMPLE_VERSION_NUMBER = Pattern.compile("^\\d+(?:\\.\\d+)*$");
+
     /**
      * <h3>Description</h3>
      * <p>
