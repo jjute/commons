@@ -11,7 +11,7 @@ import java.lang.reflect.Field;
 
 @MethodsNotNull
 @SuppressWarnings("unused")
-public class ReflectionUtils {
+public class ReflectionUtils extends org.springframework.util.ReflectionUtils {
 
     /**
      * Read the named {@link Field} in target object and return
