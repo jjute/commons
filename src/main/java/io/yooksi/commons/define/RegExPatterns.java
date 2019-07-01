@@ -1,7 +1,5 @@
 package io.yooksi.commons.define;
 
-import com.sun.org.apache.xml.internal.serialize.LineSeparator;
-
 import java.util.regex.Pattern;
 
 /**

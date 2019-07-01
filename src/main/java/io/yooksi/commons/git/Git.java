@@ -1,7 +1,7 @@
 package io.yooksi.commons.git;
 
-import com.sun.org.apache.xml.internal.serialize.LineSeparator;
 import io.yooksi.commons.bash.UnixPath;
+import io.yooksi.commons.define.LineSeparator;
 import io.yooksi.commons.define.MethodsNotNull;
 import io.yooksi.commons.logger.LibraryLogger;
 

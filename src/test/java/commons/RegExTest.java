@@ -1,6 +1,6 @@
 package commons;
 
-import com.sun.org.apache.xml.internal.serialize.LineSeparator;
+import io.yooksi.commons.define.LineSeparator;
 import io.yooksi.commons.define.RegExPatterns;
 import io.yooksi.commons.util.StringUtils;
 import org.jetbrains.annotations.TestOnly;
