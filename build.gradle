@@ -11,6 +11,9 @@ plugins {
     id 'java-library'
 }
 
+group "io.yooksi"
+version "v0.4.0-alpha"
+
 repositories {
     // Use jcenter for resolving your dependencies.
     // You can declare any Maven/Ivy/file repository here.
