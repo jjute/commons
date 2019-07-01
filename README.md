@@ -8,6 +8,12 @@ This is a simple Java library for everyday use that implements a wide range of u
 
 It is developed primarily for use with my personal project and my motivation to continue development comes from the continual pursuit of finding elegant and efficient conceptual and implementation Java designs which are then compiled here. However the code is completely open-source and available to everyone.
 
+## Build status
+
+[![Build Status](https://travis-ci.com/yooksi/commons.svg?branch=master)](https://travis-ci.com/yooksi/commons) 
+
+---
+
 ## Features
 
 - Easy to create AOP proxies and method interceptors.
