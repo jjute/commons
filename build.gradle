@@ -22,10 +22,14 @@ repositories {
 
 dependencies {
 
-    // JUnit 5 used for testing
+    // This dependency allows us to write tests and extensions which use JUnit 5
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.5.0'
-    
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.0'
+
+    // This dependency allows us to run tests which use JUnit 5
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.5.0'
+
     // Use this instead of the log4j-api, it's included in here
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.2'
@@ -70,4 +74,10 @@ sourceSets {
     
     test.java.srcDirs = ['src/test/java']
     test.resources.srcDirs = ['src/test/resources']
+}
+
+// Specifies that JUnit Platform (a.k.a. JUnit 5)
+// should be used to execute the tests.
+test {
+    useJUnitPlatform()
 }
