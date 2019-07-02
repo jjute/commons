@@ -1,5 +1,5 @@
 language: java
-install: gradle assemble
-script: gradle check
+install: ./gradlew assemble
+script: ./gradlew check
 after_success:
   - bash <(curl -s https://codecov.io/bash)
