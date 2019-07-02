@@ -9,6 +9,16 @@
  */
 apply plugin: 'java-library'
 
+/*
+ * The JaCoCo plugin provides code coverage metrics for Java code via integration with JaCoCo.
+ * JaCoCo is a free code coverage library for Java that provides a new standard technology for
+ * code coverage analysis in Java VM based environments. The focus is providing a lightweight,
+ * flexible and well documented library for integration with various build and development tools.
+ *
+ * Read the official plugin documentation here:
+ * https://docs.gradle.org/current/userguide/jacoco_plugin.html
+ */
+apply plugin: 'jacoco'
 
 group "io.yooksi"
 version "v0.4.0-alpha"
@@ -135,3 +145,28 @@ test {
         logger.quiet("Finished running Unit Tests.")
     }
 }
+
+jacocoTestReport {
+    
+    // Run the tests before generating the report
+    dependsOn test
+    
+    reports {
+        // The JaCoCo (single file) XML report
+        xml.enabled = true
+        // The JaCoCo HTML report
+        html.enabled = true
+    }
+    doFirst {
+        logger.debug("Generating code coverage...")
+    }
+    doLast {
+        logger.quiet("Finished generating code coverage.")
+    }
+}
+/* Generate test reports before running all checks.
+ * This will make sure that reports are generated before
+ * we send them to https://codecov.io
+ */
+check.dependsOn jacocoTestReport
+
