@@ -87,25 +87,6 @@ sourceSets {
     test.resources.srcDirs = ['src/test/resources']
 }
 
-/*
- * This task will delete ALL files from the test results
- * root directory defined in JavaPluginConvention.
- */
-cleanTest {
-    // Returns a file pointing to the root directory of the test results
-    File[] results = project.getConvention()
-            .getPlugin(JavaPluginConvention.class)
-            .testResultsDir.listFiles()
-    /*
-     * Skip cleaning if directory is empty
-     */
-    onlyIf {
-        results.length > 0
-    }
-    delete(results)
-    logger.quiet("Finished cleaning project test results.")
-}
-
 test {
     // Clean the old test-results first
     dependsOn cleanTest
