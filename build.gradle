@@ -1,153 +1,26 @@
-/*
- * The Java Library plugin expands the capabilities of the Java plugin by providing specific
- * knowledge about Java libraries. In particular, a Java library exposes an API to consumers
- * (i.e., other projects using the Java or the Java Library plugin). All the source sets, tasks
- * and configurations exposed by the Java plugin are implicitly available when using this plugin.
- *
- * Read the official plugin documentation here:
- * https://docs.gradle.org/current/userguide/java_library_plugin.html
- */
-apply plugin: 'java-library'
 
-/*
- * The JaCoCo plugin provides code coverage metrics for Java code via integration with JaCoCo.
- * JaCoCo is a free code coverage library for Java that provides a new standard technology for
- * code coverage analysis in Java VM based environments. The focus is providing a lightweight,
- * flexible and well documented library for integration with various build and development tools.
- *
- * Read the official plugin documentation here:
- * https://docs.gradle.org/current/userguide/jacoco_plugin.html
- */
-apply plugin: 'jacoco'
-
-group "io.yooksi"
-version "v0.4.0-alpha"
-
-// Configures the repositories for this project used to resolve your dependencies.
-repositories {
-    /*
-     * You can declare any Maven/Ivy/file repository here.
-     */
-    jcenter()
-}
+version = "0.4.0-alpha"
 
 dependencies {
-
-    // This dependency allows us to write tests and extensions which use JUnit 5
-    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.0'
-
-    // This dependency allows us to run tests which use JUnit 5
-    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.5.0'
-
+    
     // Use this instead of the log4j-api, it's included in here
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
     implementation 'org.apache.logging.log4j:log4j-core:2.11.2'
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    implementation 'org.apache.commons:commons-lang3:3.9'
+    api 'org.apache.commons:commons-lang3:3.9'
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation 'commons-io:commons-io:2.6'
+    api 'commons-io:commons-io:2.6'
 
     // JetBrains Java Annotations
     // https://mvnrepository.com/artifact/org.jetbrains/annotations
-    implementation 'org.jetbrains:annotations:17.0.0'
+    api 'org.jetbrains:annotations:17.0.0'
 
-    // Bean Validation API
-    // https://mvnrepository.com/artifact/javax.validation/validation-api
-    implementation 'javax.validation:validation-api:2.0.1.Final'
-
-    // Contains javax annotations
-    // https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305
-    implementation 'com.google.code.findbugs:jsr305:3.0.2'
-
-    // Hibernate Validator Engine
-    // https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator
-    implementation 'org.hibernate.validator:hibernate-validator:6.0.16.Final'
-
-    // Expression Language 3.0
-    // https://mvnrepository.com/artifact/org.glassfish/javax.el
-    implementation 'org.glassfish:javax.el:3.0.0'
+    api libraries.validation_annotations
+    implementation libraries.validation_core
 
     // Spring Framework
     // https://mvnrepository.com/artifact/org.springframework/spring-context
     implementation 'org.springframework:spring-context:5.1.7.RELEASE'
-
-    // https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit
-    implementation 'org.eclipse.jgit:org.eclipse.jgit:5.3.2.201906051522-r'
 }
-
-sourceSets {
-    main.java.srcDirs = ['src/main/java']
-    main.resources.srcDirs = ['src/main/resources']
-    
-    test.java.srcDirs = ['src/test/java']
-    test.resources.srcDirs = ['src/test/resources']
-}
-
-test {
-    // Clean the old test-results first
-    dependsOn cleanTest
-
-    // Specifies that JUnit Platform (a.k.a. JUnit 5)
-    // should be used to execute the tests.
-    useJUnitPlatform()
-
-//    // set a system property for the test JVM(s)
-//    systemProperty 'some.prop', 'value'
-
-//    // explicitly include or exclude tests
-//    include 'org/foo/**'
-//    exclude 'org/boo/**'
-
-//    // set JVM arguments for the test JVM(s)
-//    jvmArgs '-XX:MaxPermSize=256m'
-
-//    // show standard out and standard error of the test JVM(s) on the console
-//    testLogging.showStandardStreams = true
-
-    // Fail the 'test' task on the first test failure
-    failFast = false
-
-    doFirst {
-        logger.debug("Running project Unit Tests...")
-    }
-
-    // listen to events in the test execution lifecycle
-    beforeTest { descriptor ->
-        logger.lifecycle("Running test: " + descriptor)
-    }
-//    afterTest { descriptor, result ->
-//        logger.lifecycle("Test result: " + result)
-//    }
-    doLast {
-        logger.quiet("Finished running Unit Tests.")
-    }
-}
-
-jacocoTestReport {
-    
-    // Run the tests before generating the report
-    dependsOn test
-    
-    reports {
-        // The JaCoCo (single file) XML report
-        xml.enabled = true
-        // The JaCoCo HTML report
-        html.enabled = true
-    }
-    doFirst {
-        logger.debug("Generating code coverage...")
-    }
-    doLast {
-        logger.quiet("Finished generating code coverage.")
-    }
-}
-/* Generate test reports before running all checks.
- * This will make sure that reports are generated before
- * we send them to https://codecov.io
- */
-check.dependsOn jacocoTestReport
-
