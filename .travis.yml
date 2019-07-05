@@ -12,6 +12,6 @@ install:
   # Do what we normally would do from here on
   - ./gradlew assemble
 script:
-  - ./gradlew check
+  - ./gradlew check --stacktrace
 after_success:
   - bash <(curl -s https://codecov.io/bash)
