@@ -1,4 +1,4 @@
-# Java Jute Commons Library
+# JJute Commons Library
 
 ---
 
