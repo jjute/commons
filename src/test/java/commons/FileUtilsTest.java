@@ -19,11 +19,11 @@ public class FileUtilsTest {
     @Test
     public void testPathExclusion() {
 
-        Path path = Paths.get("D:\\foo\\bar\\test");
+        Path path = Paths.get("/foo/bar/test");
 
         testPathExclusion(path, true, "test", "path", "should", "match");
         testPathExclusion(path, false, "path", "does", "NOT", "match");
-        testPathExclusion(path, true, "path", "starts", "with", "foo\\bar");
+        testPathExclusion(path, true, "path", "starts", "with", "foo/bar");
         testPathExclusion(path, true, "path", "starts", "foo", "with", "bar");
     }
 

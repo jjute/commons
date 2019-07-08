@@ -13,7 +13,7 @@ import java.lang.reflect.Proxy;
 
 @MethodsNotNull
 @SuppressWarnings({"unused", "WeakerAccess"})
-public class AnnotationUtils {
+public class AnnotationUtils extends org.springframework.core.annotation.AnnotationUtils {
 
     /**
      * <p>Retrieve the given annotation's attributes as a Map, preserving all attribute types.</p>
