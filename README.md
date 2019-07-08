@@ -10,7 +10,7 @@ It is developed primarily for use with my personal project and my motivation to 
 
 ## Build status
 
-[![Build Status](https://travis-ci.org/jjute/commons.svg?branch=master)](https://travis-ci.org/jjute/commons) 
+[![Build Status](https://travis-ci.org/jjute/commons.svg?branch=master)](https://travis-ci.org/jjute/commons) [![Coverage Status](https://coveralls.io/repos/github/jjute/commons/badge.svg?branch=develop)](https://coveralls.io/github/jjute/commons?branch=develop)
 
 ---
 
