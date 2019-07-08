@@ -10,7 +10,7 @@ It is developed primarily for use with my personal project and my motivation to 
 
 ## Build status
 
-[![Build Status](https://travis-ci.com/yooksi/commons.svg?branch=master)](https://travis-ci.com/yooksi/commons) 
+[![Build Status](https://travis-ci.org/jjute/commons.svg?branch=master)](https://travis-ci.org/jjute/commons) 
 
 ---
 
