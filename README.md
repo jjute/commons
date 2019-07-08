@@ -1,4 +1,4 @@
-# Java Jute Commons Library
+# JJute Commons Library
 
 ---
 
@@ -10,7 +10,9 @@ It is developed primarily for use with my personal project and my motivation to 
 
 ## Build status
 
-[![Build Status](https://travis-ci.com/yooksi/commons.svg?branch=master)](https://travis-ci.com/yooksi/commons) 
+[![Build Status](https://travis-ci.org/jjute/commons.svg?branch=master)](https://travis-ci.org/jjute/commons)
+[![Coverage Status](https://coveralls.io/repos/github/jjute/commons/badge.svg?branch=develop)](https://coveralls.io/github/jjute/commons?branch=develop)
+[![Jitpack Release](https://jitpack.io/v/jjute/commons.svg)](https://jitpack.io/#jjute/commons)
 
 ---
 
@@ -18,7 +20,6 @@ It is developed primarily for use with my personal project and my motivation to 
 
 - Easy to create AOP proxies and method interceptors.
 - Programmatic creation and execution of Bash scripts.
-- Wrapper support for basic Git repository and command interactions. 
 - Better control and easier use of Log4j loggers.
 - Many utility wrappers offering more operations and finer execution.
 - Useful regular expression patterns for common use.
@@ -31,6 +32,5 @@ It is developed primarily for use with my personal project and my motivation to 
 - All library logging is facilitated by [Apache Log4j2](https://logging.apache.org/log4j/2.x/).
 - Most utilities depend on [Apache Commons](https://commons.apache.org/) components.
 - AOP aspects are implemented with [Spring Framework](https://spring.io/).
-- Backbone of Git interactions are utilizing [JGit](https://github.com/eclipse/jgit).
 - Validations are performed with [Hibernate Validator Engine](http://hibernate.org/validator/). 
 - IDEA integration is done with [JetBrains Java Annotations](https://mvnrepository.com/artifact/org.jetbrains/annotations).

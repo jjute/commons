@@ -1,8 +1,33 @@
 
+buildscript {
+    repositories {
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath "gradle.plugin.com.github.kt3k.coveralls:coveralls-gradle-plugin:2.8.4"
+    }
+}
+
+apply plugin: "com.github.kt3k.coveralls"
+apply plugin: 'java-library'
+apply plugin: 'jacoco'
+
+repositories {
+    jcenter()
+}
+
 version = "0.4.0-alpha"
 
 dependencies {
-    
+
+    // This dependency allows us to write tests and extensions which use JUnit 5
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.0'
+
+    // This dependency allows us to run tests which use JUnit 5
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.5.0'
+
     // Use this instead of the log4j-api, it's included in here
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
     implementation 'org.apache.logging.log4j:log4j-core:2.11.2'
@@ -17,10 +42,34 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jetbrains/annotations
     api 'org.jetbrains:annotations:17.0.0'
 
-    api libraries.validation_annotations
-    implementation libraries.validation_core
+    // Bean Validation API
+    // https://mvnrepository.com/artifact/javax.validation/validation-api
+    api 'javax.validation:validation-api:2.0.1.Final'
+
+    // Contains javax annotations
+    // https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305
+    api 'com.google.code.findbugs:jsr305:3.0.2'
+
+    // Hibernate Validator Engine
+    // https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator
+    implementation 'org.hibernate.validator:hibernate-validator:6.0.16.Final'
+
+    // Expression Language 3.0
+    // https://mvnrepository.com/artifact/org.glassfish/javax.el
+    implementation 'org.glassfish:javax.el:3.0.0'
 
     // Spring Framework
     // https://mvnrepository.com/artifact/org.springframework/spring-context
     implementation 'org.springframework:spring-context:5.1.7.RELEASE'
 }
+
+test {
+    dependsOn cleanTest
+    useJUnitPlatform()
+    beforeTest { d -> logger.lifecycle("Running test: $d") }
+}
+jacocoTestReport {
+    dependsOn test
+    reports.xml.enabled = true
+}
+check.dependsOn jacocoTestReport
