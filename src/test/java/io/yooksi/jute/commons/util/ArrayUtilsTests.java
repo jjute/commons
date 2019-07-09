@@ -1,11 +1,10 @@
-package commons;
+package io.yooksi.jute.commons.util;
 
-import io.yooksi.commons.util.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("WeakerAccess")
-public class ArrayUtilsTest {
+public class ArrayUtilsTests {
 
     @Test
     @SuppressWarnings("ConstantConditions")

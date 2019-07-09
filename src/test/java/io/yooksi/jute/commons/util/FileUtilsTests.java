@@ -1,6 +1,5 @@
-package commons;
+package io.yooksi.jute.commons.util;
 
-import io.yooksi.commons.util.FileUtils;
 import javafx.util.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,7 +10,7 @@ import java.nio.file.Paths;
 import java.util.Set;
 
 @SuppressWarnings("WeakerAccess")
-public class FileUtilsTest {
+public class FileUtilsTests {
 
     private static final Path ROOT_PATH = Paths.get(System.getProperty("user.dir"));
     private static final java.util.Random RAND = new java.util.Random();

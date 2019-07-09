@@ -1,22 +1,19 @@
-package commons;
+package io.yooksi.jute.commons;
 
-import io.yooksi.commons.logger.CommonLogger;
-import io.yooksi.commons.logger.LibraryLogger;
+import io.yooksi.jute.commons.logger.CommonLogger;
+import io.yooksi.jute.commons.logger.LibraryLogger;
 import org.apache.logging.log4j.Level;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SuppressWarnings("WeakerAccess")
-public class LoggerTest {
+public class LoggerTests {
 
     @Test @Order(1)
     public void testLoggingToLogFileSimple() throws IOException {
-        TestUtils.assertTextFileLineCount(testLoggingToLogFile(Level.TRACE, Level.INFO), 1);
+        assertTextFileLineCount(testLoggingToLogFile(Level.TRACE, Level.INFO), 1);
     }
 
     @Test @Order(2)
@@ -32,7 +29,7 @@ public class LoggerTest {
             boolean canLogToFile = logLvl.intLevel() <= LibraryLogger.get().getLevel().intLevel();
 
             java.io.File logFile = LibraryLogger.getLogFile();
-            TestUtils.assertTextFileLineCount(logFile, canLogToFile ? 1 : 0);
+            assertTextFileLineCount(logFile, canLogToFile ? 1 : 0);
         }
 
     }
@@ -47,7 +44,7 @@ public class LoggerTest {
 
         test3.clearLogFile();
         test3.info("Printing INFO to logfile with CommonLogger at level ALL");
-        TestUtils.assertTextFileLineCount(test3.getLogFile(), 1);
+        assertTextFileLineCount(test3.getLogFile(), 1);
     }
 
     @Test @Order(4)
@@ -57,7 +54,7 @@ public class LoggerTest {
             for (Level logFileLvl : Level.values())
             {
                 java.io.File logFile = testLoggingToLogFile(logLvl, logFileLvl);
-                TestUtils.assertTextFileLineCount(logFile, 1);
+                assertTextFileLineCount(logFile, 1);
             }
         }
     }
@@ -69,7 +66,7 @@ public class LoggerTest {
             for (Level logFileLvl : Level.values())
             {
                 java.io.File logFile = testReloadLoggingToLogFile(logLvl, logFileLvl);
-                TestUtils.assertTextFileLineCount(logFile,1);
+                assertTextFileLineCount(logFile,1);
             }
         }
     }
@@ -99,5 +96,15 @@ public class LoggerTest {
         logger.printf(logFileLevel, "TRTLF: Printing %s to logfile with CommonLogger at level %s", logFileLevel.name(), level);
 
         return logger.getLogFile();
+    }
+
+    private void assertTextFileLineCount(java.io.File file, int count) throws IOException {
+
+        long lineCount = getTextFileLineCount(file);
+        Assertions.assertEquals(count, lineCount);
+    }
+
+    private long getTextFileLineCount(java.io.File file) throws IOException {
+        return java.nio.file.Files.lines(file.toPath()).count();
     }
 }

@@ -1,15 +1,15 @@
-package commons;
+package io.yooksi.jute.commons.validation;
 
-import io.yooksi.commons.define.PositiveRange;
+import io.yooksi.jute.commons.define.PositiveRange;
 
 @SuppressWarnings("unused")
-class TestClass {
+class ValidationTestClass {
 
     interface accessibleFieldChecks {}
 
-    @PositiveRange(max=1, groups= TestClass.accessibleFieldChecks.class)
+    @PositiveRange(max = 1, groups = accessibleFieldChecks.class)
     public final int publicField = 2;
-    @PositiveRange(max=1, groups= TestClass.accessibleFieldChecks.class)
+    @PositiveRange(max = 1, groups = accessibleFieldChecks.class)
     private final int privateField = 2;
 
     @PositiveRange(max=100)

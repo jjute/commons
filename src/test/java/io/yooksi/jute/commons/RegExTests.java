@@ -1,14 +1,14 @@
-package commons;
+package io.yooksi.jute.commons;
 
-import io.yooksi.commons.define.LineSeparator;
-import io.yooksi.commons.define.RegExPatterns;
-import io.yooksi.commons.util.StringUtils;
+import io.yooksi.jute.commons.define.LineSeparator;
+import io.yooksi.jute.commons.define.RegExPatterns;
+import io.yooksi.jute.commons.util.StringUtils;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("WeakerAccess")
-public class RegExTest {
+public class RegExTests {
 
     @Test
     public void testSimpleVersionNumberRegEx() {

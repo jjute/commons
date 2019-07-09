@@ -1,10 +1,10 @@
-package commons;
+package io.yooksi.jute.commons.validation;
 
-import io.yooksi.commons.aop.AOPProxy;
-import io.yooksi.commons.define.PositiveRange;
-import io.yooksi.commons.logger.LibraryLogger;
-import io.yooksi.commons.util.ArrayUtils;
-import io.yooksi.commons.validator.BeanValidator;
+import io.yooksi.jute.commons.aop.AOPProxy;
+import io.yooksi.jute.commons.define.PositiveRange;
+import io.yooksi.jute.commons.logger.LibraryLogger;
+import io.yooksi.jute.commons.util.ArrayUtils;
+import io.yooksi.jute.commons.validator.BeanValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +14,7 @@ import javax.validation.constraints.PositiveOrZero;
 import javax.validation.groups.Default;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
-public class ValidationTest {
+public class ValidationTests {
 
     public static class Parent {
 
@@ -34,7 +34,7 @@ public class ValidationTest {
     }
     public static class ThirdChild extends FirstChild {
 
-        public ThirdChild(int a, String b, ValidationTest c) {
+        public ThirdChild(int a, String b, ValidationTests c) {
             super(a, b);
         }
     }
@@ -76,12 +76,12 @@ public class ValidationTest {
 
         // Construct and validate the third child
         ThirdChild thirdChild1 = BeanValidator.constructChild(Parent.class, ThirdChild.class,
-                ArrayUtils.add(paramsValid, new ValidationTest()));
+                ArrayUtils.add(paramsValid, new ValidationTests()));
 
         assertBeanViolationCount(0);
 
         ThirdChild thirdChild2 = BeanValidator.constructChild(Parent.class, ThirdChild.class,
-                ArrayUtils.add(paramsInvalid, new ValidationTest()));
+                ArrayUtils.add(paramsInvalid, new ValidationTests()));
 
         assertBeanViolationCount(2);
     }
@@ -89,33 +89,33 @@ public class ValidationTest {
     @Test
     public void testObjectFieldValidation() {
 
-        TestClass testClass = new TestClass();
+        ValidationTestClass testClass = new ValidationTestClass();
 
-        BeanValidator.validate(testClass,TestClass.accessibleFieldChecks.class);
-        ValidationTest.assertBeanViolationCount(2);
+        BeanValidator.validate(testClass, ValidationTestClass.accessibleFieldChecks.class);
+        ValidationTests.assertBeanViolationCount(2);
 
         BeanValidator.validate(testClass);
-        ValidationTest.assertBeanViolationCount(3);
+        ValidationTests.assertBeanViolationCount(3);
 
-        BeanValidator.validate(testClass, TestClass.accessibleFieldChecks.class, Default.class);
-        ValidationTest.assertBeanViolationCount(5);
+        BeanValidator.validate(testClass, ValidationTestClass.accessibleFieldChecks.class, Default.class);
+        ValidationTests.assertBeanViolationCount(5);
     }
 
     @Test
     public void testMethodParameterValidation() {
 
-        ValidationTest test = AOPProxy.createValidationProxy(new ValidationTest());
+        ValidationTests test = AOPProxy.createValidationProxy(new ValidationTests());
         test.callMethodParameterValidation(null, 20);
-        ValidationTest.assertBeanViolationCount(2);
+        ValidationTests.assertBeanViolationCount(2);
     }
 
     @Test
     @SuppressWarnings("unused")
     public void testMethodReturnValueValidation() {
 
-        ValidationTest test = AOPProxy.createValidationProxy(new ValidationTest());
+        ValidationTests test = AOPProxy.createValidationProxy(new ValidationTests());
         Object result = test.callMethodReturnValueValidation();
-        ValidationTest.assertBeanViolationCount(1);
+        ValidationTests.assertBeanViolationCount(1);
     }
 
     public void callMethodParameterValidation(@NotNull Object arg1, @PositiveRange(max=10) int arg2) {

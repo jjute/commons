@@ -1,16 +1,15 @@
-package commons;
+package io.yooksi.jute.commons.util;
 
-import io.yooksi.commons.util.ReflectionUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static commons.TestUtils.*;
+import static io.yooksi.jute.commons.tool.TestUtils.*;
 
 @SuppressWarnings({"unused", "WeakerAccess", "ResultOfMethodCallIgnored"})
-public class ReflectionTest {
+public class ReflectionUtilsTests {
 
     private class TestData {}
-    private static final Object target = new ReflectionTest();
+    private static final Object target = new ReflectionUtilsTests();
 
     public TestData publicField = new TestData();
     private TestData privateField = new TestData();
@@ -35,7 +34,7 @@ public class ReflectionTest {
 
         Assertions.assertDoesNotThrow(caller::getCurrentCallerClass);
         Assertions.assertEquals(Caller.class, caller.getCurrentCallerClass());
-        Assertions.assertEquals(ReflectionTest.class, caller.getCallerClass());
+        Assertions.assertEquals(ReflectionUtilsTests.class, caller.getCallerClass());
 
         Assertions.assertThrows(IllegalArgumentException.class, caller::failGettingCallerClass);
     }
@@ -54,6 +53,6 @@ public class ReflectionTest {
         ReflectionUtils.readField(target, "privateField", false, TestData.class);
     }
     private void testReadFieldClassCastException() {
-        ReflectionUtils.readField(target, "publicField", false, ReflectionTest.class);
+        ReflectionUtils.readField(target, "publicField", false, ReflectionUtilsTests.class);
     }
 }

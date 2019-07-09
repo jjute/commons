@@ -1,12 +1,12 @@
-package commons;
+package io.yooksi.jute.commons.util;
 
-import io.yooksi.commons.util.MathUtils;
+import io.yooksi.jute.commons.util.MathUtils;
 import org.jetbrains.annotations.TestOnly;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("WeakerAccess")
-public class MathUtilsTest {
+public class MathUtilsTests {
 
     @Test
     public void testTruncatingDecimals() {
