@@ -17,13 +17,14 @@ public class SystemUtils extends org.apache.commons.lang3.SystemUtils {
      * application path. If unsuccessful and the {@code fullSearch} parameter is {@code true}
      * it will then search through all other available variables.
      *
-     * @param application name of the application to retrieve the path for
+     * @param filename name of the application to retrieve the path for. The value has to represent
+     *                 a <i>full</i> filename that includes a valid file extension <i>(if one exists)</i>.
      * @param fullSearch search through <b>all</b> environment variables
      * @return path for a given application name
      *
      * @throws IllegalStateException if the {@code Path} environment variable was not found.
      */
-    public static @Nullable Path getApplicationPath(String application, boolean fullSearch) {
+    public static @Nullable Path getApplicationPath(String filename, boolean fullSearch) {
 
        String pathVar = getEnvironmentVariable("Path", null);
        if (pathVar == null) {
@@ -38,7 +39,7 @@ public class SystemUtils extends org.apache.commons.lang3.SystemUtils {
                File dir = new File(entry);
                if (dir.isDirectory())
                {
-                   FilenameFilter filter = new NameFileFilter(application);
+                   FilenameFilter filter = new NameFileFilter(filename);
                    File[] files = dir.listFiles(filter);
 
                    if (files != null && files.length > 0) {
@@ -50,11 +51,18 @@ public class SystemUtils extends org.apache.commons.lang3.SystemUtils {
             * expand the search to include all other environment variables.
             */
            if (fullSearch) {
-               for (java.util.Map.Entry<String, String> e : System.getenv().entrySet())
+               for (java.util.Map.Entry<String, String> entry : System.getenv().entrySet())
                {
-                   String path = e.getValue();
-                   if (path.equals(application)) {
-                       return java.nio.file.Paths.get(path);
+                   try {
+                       Path path = java.nio.file.Paths.get(entry.getValue());
+                       Path fileName = path.getFileName();
+
+                       if (fileName != null && fileName.toString().equals(filename)) {
+                           return path;
+                       }
+                   }
+                   catch (java.nio.file.InvalidPathException e) {
+                       // The entry is not a valid path, continue the search
                    }
                }
            }
