@@ -15,7 +15,6 @@
  */
 package io.yooksi.jute.commons.tool;
 
-import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.function.Executable;
 
