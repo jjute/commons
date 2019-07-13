@@ -1,5 +1,10 @@
-
-apply from: file(initScriptPath).exists() ? initScriptPath : initScriptUrl
+/*
+ * Apply initialization script only if they have not 
+ * already been applied from Jute root project
+ */
+if (!rootProject.name.equals('jute')) {
+    apply from: userContentUrl + initScriptPath
+}
 
 version = "0.4.0-alpha"
 
