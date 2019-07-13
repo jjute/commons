@@ -1,0 +1,10 @@
+language: java
+before_install:
+  - wget "https://raw.githubusercontent.com/jjute/jute/master/coverage.gradle"
+  - mkdir -p .gradle && mv coverage.gradle ./.gradle
+install:
+  - ./gradlew assemble
+script:
+  - ./gradlew check --init-script ./.gradle/coverage.gradle
+after_success:
+  - ./gradlew coveralls --init-script ./.gradle/coverage.gradle
