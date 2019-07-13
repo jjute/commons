@@ -6,7 +6,7 @@ This is a simple Java library for everyday use that implements a wide range of u
 
 ## Motivation
 
-It is developed primarily for use with my personal project and my motivation to continue development comes from the continual pursuit of finding elegant and efficient conceptual and implementation Java designs which are then compiled here. However the code is completely open-source and available to everyone.
+It is developed primarily for use with my personal project and my motivation to continue development comes from the continual pursuit of finding elegant and efficient conceptual and implementation Java designs.
 
 ## Build status
 
@@ -28,12 +28,12 @@ It is developed primarily for use with my personal project and my motivation to 
 
 ## Dependencies
 
-- This project uses [JUnit 5](https://junit.org/junit5/) for unit testing.
 - All library logging is facilitated by [Apache Log4j2](https://logging.apache.org/log4j/2.x/).
 - Most utilities depend on [Apache Commons](https://commons.apache.org/) components.
 - AOP aspects are implemented with [Spring Framework](https://spring.io/).
 - Validations are performed with [Hibernate Validator Engine](http://hibernate.org/validator/). 
 - IDEA integration is done with [JetBrains Java Annotations](https://mvnrepository.com/artifact/org.jetbrains/annotations).
+
 ## Frameworks
 
 - **Build automation**: Gradle 5.5
