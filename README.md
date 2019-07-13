@@ -34,3 +34,14 @@ It is developed primarily for use with my personal project and my motivation to 
 - AOP aspects are implemented with [Spring Framework](https://spring.io/).
 - Validations are performed with [Hibernate Validator Engine](http://hibernate.org/validator/). 
 - IDEA integration is done with [JetBrains Java Annotations](https://mvnrepository.com/artifact/org.jetbrains/annotations).
+## Frameworks
+
+- **Build automation**: Gradle 5.5
+- **Unit testing**: JUnit 5
+
+---
+
+## Development
+
+To setup the development environment you should install Jute Framework which will give you access to build automation and advanced features like code coverage. Read more about how to do that in the [installation](https://github.com/jjute/jute#installation) section of the project's documentation. It is also recommended to use IntelliJ IDEA as Jute comes with integration support for IntelliJ.
+
