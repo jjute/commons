@@ -49,5 +49,5 @@ To setup the development environment you should install Jute Framework which wil
 
 This project is under [Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/).
 
-Apache License 2.0 is a permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code. For more information read the `LICENSE.md` file.
+Apache License 2.0 is a permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code. For more information read the `LICENSE.txt` file.
 
