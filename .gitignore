@@ -31,6 +31,9 @@ build
 
 # Other IDEA stuff
 .idea/CodeStyles
+.idea/discord.xml
+.idea/misc.xml
+.idea/vcs.xml
 
 # Gradle
 .idea/**/gradle.xml
