@@ -17,6 +17,8 @@ package io.yooksi.jute.commons.util;
 
 import io.yooksi.jute.commons.define.LibraryAnnotation;
 import io.yooksi.jute.commons.define.MethodsNotNull;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Contract;
 
 import javax.validation.constraints.NotEmpty;
@@ -69,11 +71,11 @@ public class AnnotationUtils {
      * @throws NoSuchMethodException if the annotation doesn't have any attribute
      * that corresponds to given parameters
      */
-    public static javafx.util.Pair<Method, Object> getAttribute(Annotation annotation, @NotEmpty String attribute) throws NoSuchMethodException {
+    public static Pair<Method, Object> getAttribute(Annotation annotation, @NotEmpty String attribute) throws NoSuchMethodException {
 
         try {
             Method object = annotation.annotationType().getDeclaredMethod(attribute);
-            return new javafx.util.Pair<>(object, object.invoke(annotation, (Object[]) null));
+            return new ImmutablePair<>(object, object.invoke(annotation, (Object[]) null));
         }
         catch (IllegalAccessException | InvocationTargetException e) {
             throw new IllegalStateException("Unable to get method for annotation " + annotation.getClass().getSimpleName(), e);

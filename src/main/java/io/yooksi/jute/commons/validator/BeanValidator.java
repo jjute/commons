@@ -21,9 +21,10 @@ import io.yooksi.jute.commons.logger.LibraryLogger;
 import io.yooksi.jute.commons.util.AnnotationUtils;
 import io.yooksi.jute.commons.util.StringUtils;
 
-import javafx.util.Pair;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.TestOnly;
@@ -58,7 +59,7 @@ public final class BeanValidator {
      *     <li>Value - Regex group that contains the value we want to capture.</li>
      * </ul>
      */
-    private static final javafx.util.Pair<Pattern, Integer> PARSE_REGEX = new Pair<>(
+    private static final Pair<Pattern, Integer> PARSE_REGEX = new ImmutablePair<>(
             Pattern.compile(String.format("(?:\\%s)([a-zA-Z0-9_-]*)", REGEX_KEY)), 1);
 
     /**

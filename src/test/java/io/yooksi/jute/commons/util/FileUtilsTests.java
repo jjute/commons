@@ -15,7 +15,8 @@
  */
 package io.yooksi.jute.commons.util;
 
-import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -133,7 +134,7 @@ public class FileUtilsTests {
                 Assertions.assertTrue(file.createNewFile());
             }
         }
-        return new Pair<>(created, excluded);
+        return new ImmutablePair<>(created, excluded);
     }
     private int constructTestDirTree(Path path) throws IOException {
         return constructDirTree(path, new java.util.HashSet<>()).getKey();
